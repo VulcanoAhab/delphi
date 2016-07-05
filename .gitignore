@@ -2,6 +2,9 @@
 __pycache__/
 *.py[cod]
 *$py.class
+migrations
+*.sqlite3
+settings_dev.py
 
 # C extensions
 *.so

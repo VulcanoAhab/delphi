@@ -1,0 +1,10 @@
+amqp==1.4.9
+anyjson==0.3.3
+billiard==3.3.0.23
+celery==3.1.23
+Django==1.8.12
+django-suit==0.2.18
+kombu==3.0.35
+lxml==3.6.0
+pytz==2016.4
+selenium==2.53.1

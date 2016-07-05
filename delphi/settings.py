@@ -19,7 +19,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
 
-if os.environ.get('env_dev') is None:
+if os.environ.get('env_dev') is not None:
     from delphi.settings_dev import *
 else:
     from delphi.settings_prod import *
@@ -36,7 +36,7 @@ INSTALLED_APPS = (
 
     'suit',
     'django.contrib.admin',
-    
+
     'drivers',
     'workers',
     'grabbers',

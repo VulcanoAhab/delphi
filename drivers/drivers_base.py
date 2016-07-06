@@ -38,13 +38,13 @@ class BaseSeleniumBrowser:
         self.browser.get(self.host)
         for key,value in cookies.items():
             self.browser.add_cookie({'name':key, 'value':value})
-    
+
     @property
     def page_source(self):
         '''
         '''
         return self.browser.page_source
-    
+
     def get(self, url):
         '''
         '''
@@ -55,14 +55,14 @@ class BaseSeleniumBrowser:
         '''
         if not self.browser:return
         self.browser.close()
-    
-    @property 
+
+    @property
     def current_url(self):
         '''
         '''
         return self.browser.current_url
 
-    def wait_for_element(self, target_element, eltype, timeout=10):
+    def wait_for_element(self, target_element, eltype, timeout=30):
         '''
         wait for html element to load
         for now, only working with xpath pattern

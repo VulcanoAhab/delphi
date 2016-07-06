@@ -22,7 +22,7 @@ from grabbers.utils.html import ProcessPage
 def task_run(task_id):
     '''
     '''
-    
+
     #set vars
     task=Task.objects.get(pk=task_id)
     job=task.job
@@ -38,19 +38,18 @@ def task_run(task_id):
         wd.build_driver()
         print('[+] Starting GET RESQUEST [{}]'.format(url))
         wd.get(url)
-        
+
         for grabber in sequence.grabbers.all().order_by('sequence_index'):
-            
+
             ProcessPage.set_job_id(job.id)
             print('[+] Setting targets for grabber [{0}]'.format(grabber.name))
             ProcessPage.set_target_fields(grabber)
             print('[+] Setting browser for grabber [{0}]'.format(grabber.name))
             ProcessPage.set_browser(wd)
             print('[+] Processing page')
-            ProcessPage.process_grabber()
+            ProcessPage.process_grabber() #this guy already saves the data
 
-            #save data
-        
+
         #--------------- PAGING FROM job.confs.paging --- if set build task from all links ----
         # get the second highest and the second smaller
         #--------------------------------  USES URL FROM FISRT GET ----------------------------

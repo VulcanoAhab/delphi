@@ -4,6 +4,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
+#django
+from django.core.files import File
+
+#db models
+from urlocators.models import Page, Locator, make_url_id
+
 class BaseSeleniumBrowser:
     '''
     '''
@@ -39,11 +45,44 @@ class BaseSeleniumBrowser:
         for key,value in cookies.items():
             self.browser.add_cookie({'name':key, 'value':value})
 
-    @property
-    def page_source(self):
+    def get_page_source(self):
         '''
         '''
         return self.browser.page_source
+
+    def page_source(self, job):
+        '''
+        '''
+        source=self.browser.page_source
+        url=self.browser.current_url
+        url_id=make_url_id(url)
+
+        #build url relations
+        locs, created=Locator.objects.get_or_create(url_id=page_url_id)
+        if created:
+            locs.url=page_url
+            locs.save()
+
+        #build page relations
+        page,created=Page.objects.get_or_create(url=locs)
+        if created:
+            #build html file
+            fp=tempfile.TemporaryFile()
+            fp.write(page_source.encode())
+            fp.seek(0)
+            file_html=File(fp)
+            page.html=file_html
+            page.job.add(cls._job)
+            page.url=locs
+            page.save()
+            #close temp file
+            fp.close()
+        print('[+] Done saving page')
+
+    def back(self):
+        '''
+        '''
+        self.browser.back()
 
     def get(self, url):
         '''

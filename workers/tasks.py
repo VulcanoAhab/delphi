@@ -6,7 +6,7 @@ from delphi.celery import app
 from drivers import browsers
 from workers.models import Job, Task
 from workers.utils.commons import build_control_key
-from grabbers.utils.html import ProcessPage
+from grabbers.utils.processors import ProcessSequence
 
 ### ----- (1) helpers ----- ###
 
@@ -30,35 +30,21 @@ def task_run(task_id):
     round_number=task.round_number
     control_key=build_control_key(url, job.id)
     sequence=job.confs.sequence
+    mapper=job.confs.mapper
 
-    #no more talk, lets work
-    try:
-        wd=getattr(browsers, job.confs.driver.type)()
-        wd.load_confs(job.confs)
-        wd.build_driver()
-        print('[+] Starting GET RESQUEST [{}]'.format(url))
-        wd.get(url)
+    #build driver
+    wd=getattr(browsers, job.confs.driver.type)()
+    wd.load_confs(job.confs)
+    wd.build_driver()
 
-        for grabber in sequence.grabbers.all().order_by('sequence_index'):
+    print('[+] Starting GET request [{}]'.format(url))
+    wd.get(url)
 
-            ProcessPage.set_job_id(job.id)
-            print('[+] Setting targets for grabber [{0}]'.format(grabber.name))
-            ProcessPage.set_target_fields(grabber)
-            print('[+] Setting browser for grabber [{0}]'.format(grabber.name))
-            ProcessPage.set_browser(wd)
-            print('[+] Processing page')
-            ProcessPage.process_grabber() #this guy already saves the data
-
-
-        #--------------- PAGING FROM job.confs.paging --- if set build task from all links ----
-        # get the second highest and the second smaller
-        #--------------------------------  USES URL FROM FISRT GET ----------------------------
-
-        #limit by round number - if task.round >= job.rounds_limit : no new tasks
-        #create new task if next page(s)
-    except:
-        traceback.print_exc()
-        pass
+    #process get
+    ProcessSequence.set_job(job.id)
+    ProcessSequence.set_browser(wd)
+    ProcessSequence.mapping(mapper)
+    ProcessSequence.run()
 
     wd.close()
 

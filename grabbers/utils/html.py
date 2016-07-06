@@ -3,96 +3,13 @@ import copy
 import tempfile
 from lxml import html
 
-#django
-from django.core.files import File
-
-#db models
-from urlocators.models import Page, Locator, make_url_id
+### apps imports
 from information.models import PageData
 from workers.models import Job
-from grabbers.models import Target, Action, PostActTarget, Extractor
+from grabbers.models import Target, ElementAction, PostElementAction, Extractor, PageAction
 
-## ---  build extractors dict
-class BuildEx:
-    '''
-    '''
+from grabbers.utils.confs import GrabberConf, MapperConf
 
-    _work_dict={}
-
-    @classmethod
-    def clean_work_dict(cls):
-        '''
-        '''
-        cls._work_dict={}
-
-    @classmethod
-    def get_work_dict(cls):
-        '''
-        '''
-        return copy.deepcopy(cls._work_dict)
-
-
-    @classmethod
-    def build_work(cls, targets, post_act=None):
-        '''
-        '''
-
-
-        for target in targets:
-
-            #set target vars
-            tname=target.field_name
-            tselector=target.field_selector
-            tselector_type=target.selector_type
-            tid=target.id
-            tdict={}
-            tdict[tname]={'selector':tselector,
-                          'selector_type':tselector_type}
-            if post_act is not None:
-                post_act.update(tdict)
-
-            #build attrs list
-            atquery=target.extractors.all()
-            attrs=[e.attr for e in atquery]
-            tdict[tname].update({'attrs':attrs})
-
-            #build action dicts
-            ac_query=target.actions.all().order_by('index')
-            actions=[]
-            if not ac_query.count():
-                tdict[tname].update({'actions':actions})
-                if post_act is None:
-                    cls._work_dict.update(tdict)
-                continue
-            for action in ac_query:
-                ac_name=action.name
-                acdict={
-                    'name':ac_name,
-                    'type':action.type,
-                    'index': action.index,
-                    'post_act':{}
-                        }
-                #test if post act targets
-                apquery=PostActTarget.objects.filter(act=action.id)
-                if not apquery.count():
-                    actions.append(ac_dict)
-                    continue
-
-                #chain actions - recursive call
-                cls.build_work(apquery, acdict['post_act'])
-                actions.append(acdict)
-
-            ##update work dict
-            tdict[tname].update({'actions':actions})
-            cls._work_dict.update(tdict)
-
-    @classmethod
-    def asDict(cls, grabber):
-        '''
-        '''
-        from grabbers.models import Target
-        targets=Target.objects.filter(grabber=grabber)
-        cls.build_work(targets)
 
 
 ## ---  find & grab page data
@@ -124,34 +41,13 @@ class Grabis:
         return data_container
 
     @staticmethod
-    def load_page(browser, selectors, eltype='xpath', parent_dict={}, only_load=False):
+    def load_page(browser, selector, eltype='xpath'):
         '''
         '''
-        parent=None
-        hit_round=0
-        #wait for elements
-        for s in selectors:
-            browser.wait_for_element(s, eltype=eltype)
-
-        if only_load:return
-
-        source=browser.page_source
-        url=browser.current_url
-        url_id=make_url_id(url)
-
-        if parent_dict:
-            hit_round=parent_dict['round']+1
-            parent=parent_dict['id']
-
-        source_dict={
-                'source':source,
-                'url':url,
-                'parent':parent,
-                'round':hit_round,
-                'id':url_id,
-                    }
-
-        return source_dict, html.fromstring(source)
+        #wait for element
+        browser.wait_for_element(selector, eltype=eltype)
+        source=browser.get_page_source()
+        return html.fromstring(source)
 
     def __init__(self):
         '''
@@ -177,9 +73,10 @@ class Grabis:
         '''
         self._page_object=page_object
 
-    def get_data(self, field_name, attrs):
+    def get_data(self, field_name, attrs={}, pure_elements=False):
         '''
         '''
+        if pure_elements: return cls.data
         return Grabis.load_data_from_selected(self.data, field_name, attrs)
 
     def grab(self):
@@ -188,75 +85,22 @@ class Grabis:
         self.data=getattr(self._page_object, self._eltype)(self._selector)
 
 
-    def act(self, browser, field_name, config_dict):
+    def action(self, action_type, browser, element_index):
         '''
-        for now -- to simplify development
-        and fisrts test, only one action and no chaining in
-        post_action
         '''
-
-        field_confs=config_dict[field_name]
-        action_len=len(field_confs['actions'])
-        if action_len > 1:
-            print('[+] Warning: Only considering one action is this version')
-        elif action_len <= 0:
-            return
-
-        #do a generic call in browser class - selenium and others wrapper
-        act_list=browser.browser.find_elements_by_xpath(self._selector)
-        act_list_range=range(len(act_list)) #i know, but...
-
-        action=field_confs['actions'][0] #for now only one action per act -- lets make simple
-        action_type=action['type']
-        action_name=action['name']
-        post_act=action['post_act']
-
-        post_container=[]
-        #action and possible grab data
-        for index in act_list_range:
-
-            if index >= len(act_list)-1:break
-
-            element=act_list[index]
-            getattr(element, action_type)() #always a function
-
-            #only one post_act and no chaining yet
-            post_items=list(post_act.items())
-            if len(post_items)>1:
-                print('[+] Warning: Only one post_action in this version')
-            post_field_name, post_conf=post_items[0]
-            selector=post_conf['selector'] or None
-
-            page_source,page_object=Grabis.load_page(browser, [selector,])
-
-            gb=Grabis()
-            gb.set_page_object(page_object)
-            gb.set_selector(selector)
-            #------ need to ad page source to result here
-
-            attrs=post_conf['attrs']
-            if not attrs:continue
-
-            gb.grab()
-            click_list=gb.get_data(field_name, attrs)
-            post_container.append({'html':page_source, 'target_data':click_list})
-
-            #do a generic call in browser class - selenium and others wrapper
-            browser.browser.back()
-            Grabis.load_page(browser, [self._selector,], only_load=True)
-            act_list=browser.browser.find_elements_by_xpath(self._selector)
-
-        return post_container
+        els=browser.browser.find_elements_by_xpath(self._selector) #shoulb be in browser api
+        getattr(els[element_index], action_type)
 
 ## ---  extract page data
 class Pythoness:
     '''
     '''
-    _extractis={}
+    _conf={}
     _data={
         'page_source':[],
         'page_data':[],
           }
+
     _job=None
 
     @classmethod
@@ -266,119 +110,81 @@ class Pythoness:
         cls._job=job
 
     @classmethod
-    def set_fields(cls, **kwargs):
+    def set_grabber(cls, grabber):
         '''
         '''
-        cls._extractis={k:v for k,v in kwargs.items()}
-        print('[+] Setting extractors [{0}]'.format(cls._extractis))
+        cls._conf=GrabberConf.toDict(grabber)
+        print('[+] Setting Grabber Configuration [{0}]'.format(cls._conf))
 
     @classmethod
-    def session(cls, browser):
+    def map_sequence_targets(cls, mapper):
+        '''
+        '''
+        mapper_dict=MapperConf.toDict(mapper)
+        field_name=mapper_dict['name']
+        selector=mapper_dict['selector']
+        page_object=Grabis.load_page(browser,selector, only_load=True)
+        gb=Grabis()
+        gb.set_selector(selector)
+        gb.set_page_object(page_object)
+        data=gb.get_data(field_name, pure_elements=True)
+        return data
+
+
+    @classmethod
+    def session(cls, browser, target_index=-1):
         '''
         '''
         # set base values
-        fields=list(cls._extractis.keys())
         elements_lists=[]
 
-        #nasty but trying to guarantee all elements | need improvement soon
-        selectors=[cls._extractis[f]['selector'] for f in fields]
-        page_source,page_object=Grabis.load_page(browser,selectors)
-        cls._data['page_source'].append(page_source)
 
-        for f in fields:
-            selector=cls._extractis[f]['selector']
+        if 'target' in cls._conf:
+
+            selector=cls._conf['target']['selector']
+            page_object=Grabis.load_page(browser,selector)
+
             gb=Grabis()
             gb.set_selector(selector)
             gb.set_page_object(page_object)
 
-            if cls._extractis[f]['actions']:
-                data=gb.act(browser,f, cls._extractis)
-                cls._data['page_data'].extend(data)
-            elif cls._extractis[f]['attrs']:
+            if 'element_action' in cls._conf:
+                gb.action(cls._conf['element_action'],
+                          browser, target_index)
+            if 'extractors' in cls._conf:
+                field_name=cls._conf['target']['name']
+                attrs=cls._conf['target']['extractors']
                 gb.grab()
-                data=gb.get_data(f, cls._extractis[f]['attrs'])
-                data={'html':page_source, 'target_data':data}
-                cls._data['page_data'].append(data)
+                data=gb.get_data(field_name, attrs)
+                cls._data['page_data']=data
 
+        if 'page_action' in cls._conf:
+            page_action=cls._conf['page_action']
+            getattr(browser, page_action)
+
+        ### ------- last
+        post_action=cls._conf['post_action']
+        if post_action:
+            ps=Pythoness()
+            ps.set_job(self.job)
+            ps.set_fields(post_action)
+            ps.session(browser)
+            ps.save_data()
 
     @classmethod
     def save_data(cls):
         '''
         '''
-        for page in cls._data['page_data']:
+        for dict_item in cls._data['page_data']:
+            print(dict_item)
+#            for field_name, values in dict_item.items():
+#                for value in values:
+#                    if not value:continue
+#                    pd=PageData()
+#                    pd.field_name=field_name
+#                    pd.field_value=value
+#                    pd.page=page
+#                    pd.save()
+#
 
-            page_source=page['html']['source']
-            page_url=page['html']['url']
-            page_url_id=page['html']['id']
-
-            page_data=page['target_data']
-
-            locs, created=Locator.objects.get_or_create(url_id=page_url_id)
-            if created:
-                locs.url=page_url
-                locs.save()
-
-            page,created=Page.objects.get_or_create(url=locs)
-            if created:
-                fp=tempfile.TemporaryFile()
-                fp.write(page_source.encode())
-                fp.seek(0)
-                page.html=File(fp)
-                page.job.add(cls._job)
-                page.url=locs
-                page.save()
-
-                #close temp file
-                fp.close()
-
-
-            for dict_item in page_data:
-                for field_name, values in dict_item.items():
-                    for value in values:
-                        if not value:continue
-                        pd=PageData()
-                        pd.field_name=field_name
-                        pd.field_value=value
-                        pd.page=page
-                        pd.save()
-
-
-
-class ProcessPage:
-    '''
-    '''
-    _exdict={}
-    _browser=None
-    _job_id=None
-
-    @classmethod
-    def set_job_id(cls, job_id):
-        '''
-        '''
-        cls._job_id=job_id
-
-    @classmethod
-    def set_target_fields(cls, grabber):
-        '''
-        '''
-        print('[+] Grabber [{}] running.'.format(grabber))
-        BuildEx.clean_work_dict()
-        BuildEx.asDict(grabber)
-        cls._exdict=BuildEx.get_work_dict()
-
-    @classmethod
-    def set_browser(cls, browser):
-        '''
-        '''
-        cls._browser=browser
-
-    @classmethod
-    def process_grabber(cls):
-        '''
-        '''
-        job=Job.objects.get(id=cls._job_id)
-        Pythoness.set_job(job)
-        Pythoness.set_fields(**cls._exdict)
-        Pythoness.session(cls._browser)
-        Pythoness.save_data()
 

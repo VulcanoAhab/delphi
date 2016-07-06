@@ -14,7 +14,8 @@ class JobConfig(models.Model):
     '''
     name=models.CharField(max_length=150)
     driver=models.ForeignKey('drivers.Driver')
-    sequence=models.ForeignKey('grabbers.Sequence')    
+    sequence=models.ForeignKey('grabbers.Sequence')
+    mapper=models.ForeignKey('grabbers.Mapper')
 
     def __str__(self):
         '''
@@ -25,7 +26,7 @@ class Job(models.Model):
     '''
     '''
     confs=models.ForeignKey('workers.JobConfig')
-    seed=models.ForeignKey('urlocators.Locator', related_name='seed')
+    seed=models.URLField(max_length=500)
     status=models.CharField(max_length=5, choices=_status)
     results_count=models.IntegerField(default=0)
     round_limit=models.IntegerField()
@@ -46,10 +47,10 @@ class Task(models.Model):
     job=models.ForeignKey('workers.Job')
     created_at=models.DateTimeField(auto_now_add=True)
     last_modified=models.DateTimeField(auto_now=True)
-    
+
     def __str__(self):
         '''
         '''
         return ':::'.join([self.target_url, str(self.round_number)])
-    
+
 

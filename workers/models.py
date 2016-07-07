@@ -35,7 +35,7 @@ class Job(models.Model):
     name=models.CharField(max_length=150, unique=True)
 
     def __str__(self):
-        return '{}<|>{}'.format(self.seed.url, self.confs.name)
+        return '{}<|>{}'.format(self.seed, self.confs.name)
 
 class Task(models.Model):
     '''

@@ -4,7 +4,7 @@ class ProcessSequence:
     '''
     '''
     _browser=None
-    _job_id=None
+    _job=None
     _sequence=None
     _sequence_maps={
         'size':1,
@@ -12,10 +12,10 @@ class ProcessSequence:
             }
 
     @classmethod
-    def set_job_id(cls, job_id):
+    def set_job(cls, job):
         '''
         '''
-        cls._job_id=job_id
+        cls._job=job
 
     @classmethod
     def set_browser(cls, browser):
@@ -35,14 +35,17 @@ class ProcessSequence:
         '''
         if not mapper:return
         ps=Pythoness()
-        mapped_elements=ps.map_sequence_targets(mapper)
+        mapped_elements=ps.map_sequence_targets(mapper, cls._browser)
         mlen=len(mapped_elements)
+        print('[+] Mapped [{}] elements'.format(mlen))
         if mlen < 1:
             print('[+] Mapping lower than 1 has no purpose')
+            print(cls._browser.browser.page_source[:500])
+            print('[+] Mapped [{}] elements'.format(mlen))
             return
         cls._sequence_maps={
             'size':mlen,
-            'rects':[m.rect for m in mapped_elements]
+            'attrs':[m.attrib for m in mapped_elements]
                 }
 
     @classmethod
@@ -51,9 +54,8 @@ class ProcessSequence:
         '''
         for grabber in cls._sequence:
             print('[+] Grabber [{}] running.'.format(grabber))
-            job=Job.objects.get(id=cls._job_id) #why | lets improve please
             ps=Pythoness()
-            ps.set_job(job)
+            ps.set_job(cls._job)
             ps.set_grabber(grabber)
             ps.session(cls._browser, element_index=index)
             ps.save_data()
@@ -62,6 +64,9 @@ class ProcessSequence:
     def run(cls):
         '''
         '''
+        if not cls._sequence:
+            print('[+] No sequence to work')
+            return
         if cls._sequence_maps['size']<=1:
             cls.fire_sequence()
         else:

@@ -8,17 +8,21 @@ class PageAdmin(admin.ModelAdmin):
     '''
     list_display=('page_url', 'job_names')
     readonly_fields=('created_at', 'modified_at')
-    search_fields=('url__url','job__seed__url')
+    search_fields=('locator__url','job__seed')
 
     def page_url(self, obj):
         '''
         '''
-        return obj.url.url[:150]
-    
+        if obj.addr:
+            return obj.addr.url[:150]
+        return 'nourl'
+
     def job_names(self, obj):
         '''
         '''
-        return ','.join([j.name for j in obj.job.all()])
+        if obj.job:
+            return obj.job.name
+        return 'nojob'
 
 class LocatorAdmin(admin.ModelAdmin):
     '''

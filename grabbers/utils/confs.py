@@ -9,13 +9,7 @@ class GrabberConf:
     def toDict(cls, grabberObj):
         '''
         '''
-        work_dict={
-            'target':{},
-            'extractors':{},
-            'element_action':{},
-            'page_action':{},
-            'post_action':{},
-                }
+        work_dict={}
         def post_helper(grabberObj):
             '''
             '''
@@ -25,9 +19,11 @@ class GrabberConf:
             target_selector=grabberObj.target.field_selector
             target_name=grabberObj.target.field_name
             target_selector_type=grabberObj.target.selector_type
-            work_dict['target']['selector']=target_selector
-            work_dict['target']['name']=target_name
-            work_dict['target']['selector_type']=target_selector_type
+            tempDict={}
+            tempDict['selector']=target_selector
+            tempDict['name']=target_name
+            tempDict['selector_type']=target_selector_type
+            work_dict['target']=tempDict
         extis=grabberObj.extractors.all()
         if extis.count():
             work_dict['extractors']=[e.type for e in extis]
@@ -36,6 +32,7 @@ class GrabberConf:
         if grabberObj.page_action:
             work_dict['page_action']=grabberObj.page_action.type
         work_dict['post_action']=post_helper(grabberObj)
+        return work_dict
 
 ###################################################################
 ###################################################################

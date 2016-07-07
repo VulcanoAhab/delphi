@@ -7,10 +7,12 @@ import urllib.parse as uparse
 
 ### --- helpers ----
 def site_directory_path(instance, filename):
+    print('Calling directory')
+    print(instance.job, 'jbois')
     job_name=instance.job.name
     return '{job_name}/htmls/{uid}.html'.format(
                         job_name=job_name,
-                        uid=instance.url.url_id)
+                        uid=instance.addr.url_id)
 
 
 def make_url_id(url_string):
@@ -24,11 +26,10 @@ def make_url_id(url_string):
 class Locator(models.Model):
     '''
     '''
-    
+
     url=models.URLField(max_length=1000)
-    url_id=models.CharField(max_length=150, unique=True, blank=True)
+    url_id=models.CharField(max_length=150, unique=True)
     uround=models.IntegerField(default=-1)
-    parent=models.ManyToManyField('self', related_name='parent', blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
     last_modified=models.DateTimeField(auto_now=True)
 
@@ -49,20 +50,20 @@ class Locator(models.Model):
         '''
         '''
         if not self.url_id:
-            self.url_id=make_url_id(self.url) 
+            self.url_id=make_url_id(self.url)
         super().save(*args, **kwargs)
 
 
 class Page(models.Model):
     '''
     '''
-    url=models.ForeignKey('Locator', related_name='page_url')
-    job=models.ManyToManyField('workers.Job')
     created_at=models.DateTimeField(auto_now_add=True)
     modified_at=models.DateTimeField(auto_now=True)
     html=models.FileField(upload_to=site_directory_path)
+    addr=models.ForeignKey('urlocators.Locator')
+    job=models.ForeignKey('workers.Job')
 
     def __str__(self):
         '''
         '''
-        return '-'.join([self.url.url[:150], ','.join([j.name for j in self.job.all()])])
+        return 'testis'

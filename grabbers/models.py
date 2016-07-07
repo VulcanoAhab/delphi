@@ -55,9 +55,8 @@ class Extractor(models.Model):
     '''
     _exChoices=[
         ('href', 'href'),
-        ('text', 'text'),
-        ('src', 'src'),
-        ('data-src', 'data-src'),
+        ('text_content', 'text_content'),
+        ('iframe_source', 'iframe_source'),
         ('class', 'class'),
         ('id', 'id'),
         ('size', 'size'),

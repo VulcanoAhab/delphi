@@ -4,17 +4,21 @@
 class GrabberConf:
     '''
     '''
-
     @classmethod
     def toDict(cls, grabberObj):
         '''
         '''
+        #set var
         work_dict={}
+
+        #helper function - recursion
         def post_helper(grabberObj):
             '''
             '''
             if not grabberObj.post_action:return {}
-            return cls.toDict(grabberObj)
+            return grabberObj.post_action.grabber
+
+        #dict build
         if grabberObj.target:
             target_selector=grabberObj.target.field_selector
             target_name=grabberObj.target.field_name

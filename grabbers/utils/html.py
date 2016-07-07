@@ -76,14 +76,14 @@ class Grabis:
     def get_data(self, field_name, attrs={}, pure_elements=False):
         '''
         '''
-        if pure_elements: return cls.data
+        if pure_elements: return self.data
         return Grabis.load_data_from_selected(self.data, field_name, attrs)
 
     def grab(self):
         '''
         '''
-        self.data=getattr(self._page_object, self._eltype)(self._selector)
-
+        fn=getattr(self._page_object, self._eltype)
+        self.data=fn(self._selector)
 
     def action(self, action_type, browser, element_index):
         '''
@@ -117,22 +117,23 @@ class Pythoness:
         print('[+] Setting Grabber Configuration [{0}]'.format(cls._conf))
 
     @classmethod
-    def map_sequence_targets(cls, mapper):
+    def map_sequence_targets(cls, mapper, browser):
         '''
         '''
         mapper_dict=MapperConf.toDict(mapper)
         field_name=mapper_dict['name']
         selector=mapper_dict['selector']
-        page_object=Grabis.load_page(browser,selector, only_load=True)
+        page_object=Grabis.load_page(browser, selector)
         gb=Grabis()
         gb.set_selector(selector)
         gb.set_page_object(page_object)
+        gb.grab()
         data=gb.get_data(field_name, pure_elements=True)
         return data
 
 
     @classmethod
-    def session(cls, browser, target_index=-1):
+    def session(cls, browser, element_index=-1):
         '''
         '''
         # set base values
@@ -150,23 +151,23 @@ class Pythoness:
 
             if 'element_action' in cls._conf:
                 gb.action(cls._conf['element_action'],
-                          browser, target_index)
+                          browser, element_index)
             if 'extractors' in cls._conf:
                 field_name=cls._conf['target']['name']
-                attrs=cls._conf['target']['extractors']
+                attrs=cls._conf['extractors']
                 gb.grab()
                 data=gb.get_data(field_name, attrs)
                 cls._data['page_data']=data
 
         if 'page_action' in cls._conf:
             page_action=cls._conf['page_action']
-            getattr(browser, page_action)
+            getattr(browser, page_action)(job=cls._job)
 
         ### ------- last
         post_action=cls._conf['post_action']
         if post_action:
             ps=Pythoness()
-            ps.set_job(self.job)
+            ps.set_job(cls._.job)
             ps.set_fields(post_action)
             ps.session(browser)
             ps.save_data()

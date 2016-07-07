@@ -4,11 +4,13 @@ import tempfile
 from lxml import html
 
 ### apps imports
+from grabbers.utils.confs import GrabberConf, MapperConf
+
 from information.models import PageData
+from urlocators.models import Page, Locator, make_url_id
 from workers.models import Job
 from grabbers.models import Target, ElementAction, PostElementAction, Extractor, PageAction
 
-from grabbers.utils.confs import GrabberConf, MapperConf
 
 
 
@@ -30,7 +32,6 @@ class Grabis:
                     content=htmlElement.text_content()
                 datum.append(content)
             elif ats == 'iframe_source':
-                print('IN FRAME SOURCE--------', htmlElement.attrib)
                 src=None
                 for possible in ['src','data-src','href']:
                     src=htmlElement.attrib.get(possible)
@@ -46,7 +47,6 @@ class Grabis:
         '''
         data_container=[dict() for _ in elements]
         for n,value in enumerate(elements):
-            print('[+] Loadis field [{}], value[{}], attrs[{}]'.format(field, value, attrs))
             data=Grabis._exData(value, attrs)
             data_container[n].update({field:data})
         return data_container
@@ -125,12 +125,6 @@ class Grabis:
 class Pythoness:
     '''
     '''
-    _conf={}
-    _data={
-        'page_source':[],
-        'page_data':[],
-          }
-
     _job=None
 
     @classmethod
@@ -139,15 +133,21 @@ class Pythoness:
         '''
         cls._job=job
 
-    @classmethod
-    def set_grabber(cls, grabber):
+    def __init__(self):
         '''
         '''
-        cls._conf=GrabberConf.toDict(grabber)
-        print('[+] Setting Grabber Configuration [{0}]'.format(cls._conf))
+        self._conf={}
+        self._data={
+            'page_source':[],
+            'page_data':[],
+                    }
+    def set_grabber(self, grabber):
+        '''
+        '''
+        self._conf=GrabberConf.toDict(grabber)
+        print('[+] Setting Grabber Configuration')
 
-    @classmethod
-    def map_sequence_targets(cls, mapper, browser):
+    def map_sequence_targets(self, mapper, browser):
         '''
         '''
         mapper_dict=MapperConf.toDict(mapper)
@@ -165,54 +165,52 @@ class Pythoness:
             print('[-] Fail to build map', e)
             return []
 
-    @classmethod
-    def session(cls, browser, element_index=-1):
+    def session(self, browser, element_index=-1):
         '''
         '''
         # set base values
-        if 'target' in cls._conf:
-            selector=cls._conf['target']['selector']
+        if 'target' in self._conf:
+            selector=self._conf['target']['selector']
+            print('[+] Start mining with selector [{0}]'.format(selector))
             page_object=Grabis.load_page(browser,selector)
             try:
                 gb=Grabis()
                 gb.set_selector(selector)
                 gb.set_page_object(page_object)
             except Exception as e:
-                fd=open('/Users/poisonGirl/Desktop/{}'.format('__'.join(browser.browser.current_url.split('/')[-2:])), 'w')
-                fd.write(browser.browser.page_source)
-                fd.close()
                 print('[-] Fail to load conf in Grabis', e)
                 return
-            if 'element_action' in cls._conf:
-                post_action=cls._conf['post_action']
-                gb.action(cls._conf['element_action'], browser,
+            if 'element_action' in self._conf:
+                post_action=self._conf['post_action']
+                gb.action(self._conf['element_action'], browser,
                           element_index, post_action=post_action,
-                          job=cls._job)
-            if 'extractors' in cls._conf:
-                field_name=cls._conf['target']['name']
-                attrs=cls._conf['extractors']
+                          job=self._job)
+            if 'extractors' in self._conf:
+                field_name=self._conf['target']['name']
+                attrs=self._conf['extractors']
                 gb.grab()
                 data=gb.get_data(field_name, attrs)
-                cls._data['page_data']=data
-        if 'page_action' in cls._conf:
-            page_action=cls._conf['page_action']
-            getattr(browser, page_action)(job=cls._job)
+                self._data['page_data']=data
+        if 'page_action' in self._conf:
+            page_action=self._conf['page_action']
+            print('[+] Start page action [{0}]'.format(page_action))
+            getattr(browser, page_action)(job=self._job)
 
 
-    @classmethod
-    def save_data(cls):
+    def save_data(self, browser):
         '''
         '''
-        for dict_item in cls._data['page_data']:
-            print('------------ FINAL DICT',dict_item)
-#            for field_name, values in dict_item.items():
-#                for value in values:
-#                    if not value:continue
-#                    pd=PageData()
-#                    pd.field_name=field_name
-#                    pd.field_value=value
-#                    pd.page=page
-#                    pd.save()
-#
+        url=browser.current_url
+        url_id=make_url_id(url)
+        for dict_item in self._data['page_data']:
+            for field_name, values in dict_item.items():
+                for value in values:
+                    if not value:continue
+                    pd=PageData()
+                    pd.field_name=field_name
+                    pd.field_value=value
+                    pd.page=page
+                    pd.save()
+
 
 

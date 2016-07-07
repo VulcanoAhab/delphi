@@ -7,8 +7,6 @@ import urllib.parse as uparse
 
 ### --- helpers ----
 def site_directory_path(instance, filename):
-    print('Calling directory')
-    print(instance.job, 'jbois')
     job_name=instance.job.name
     return '{job_name}/htmls/{uid}.html'.format(
                         job_name=job_name,
@@ -59,11 +57,11 @@ class Page(models.Model):
     '''
     created_at=models.DateTimeField(auto_now_add=True)
     modified_at=models.DateTimeField(auto_now=True)
-    html=models.FileField(upload_to=site_directory_path)
+    html=models.FileField(upload_to=site_directory_path, null=True, blank=True)
     addr=models.ForeignKey('urlocators.Locator')
     job=models.ForeignKey('workers.Job')
 
     def __str__(self):
         '''
         '''
-        return 'testis'
+        return self.addr.url

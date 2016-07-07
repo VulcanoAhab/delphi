@@ -52,13 +52,16 @@ class ProcessSequence:
     def fire_sequence(cls, index=-1):
         '''
         '''
-        for grabber in cls._sequence:
+        for n,grabber in enumerate(cls._sequence):
             print('[+] Grabber [{}] running.'.format(grabber))
             ps=Pythoness()
             ps.set_job(cls._job)
             ps.set_grabber(grabber)
-            ps.session(cls._browser, element_index=index)
-            ps.save_data()
+            if n == 0:#only the first one after mapping
+                ps.session(cls._browser, element_index=index)
+            else:
+                ps.session(cls._browser, element_index=-1)
+            ps.save_data(cls._browser)
 
     @classmethod
     def run(cls):

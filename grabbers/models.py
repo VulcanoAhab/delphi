@@ -88,6 +88,7 @@ class Mapper(models.Model):
     name=models.CharField(max_length=250, unique=True)
     field_name=models.CharField(max_length=250)
     field_selector=models.CharField(max_length=250)
+    page_action=models.ForeignKey('grabbers.PageAction', blank=True, null=True)
 
     def __str__(self):
         '''
@@ -109,7 +110,7 @@ class Grabber(models.Model):
     def __str__(self):
         '''
         '''
-        return self.name
+        return '::'.join([self.name, str(self.sequence_index)])
 
 
 class Sequence(models.Model):

@@ -3,10 +3,13 @@ import copy
 import tempfile
 from lxml import html
 
+## django imports
+from django.core.exceptions import ObjectDoesNotExist
+
 ### apps imports
 from grabbers.utils.confs import GrabberConf, MapperConf
 
-from information.models import PageData
+from information.models import PageData, make_control_key
 from urlocators.models import Page, Locator, make_url_id
 from workers.models import Job
 from grabbers.models import Target, ElementAction, PostElementAction, Extractor, PageAction
@@ -107,6 +110,10 @@ class Grabis:
         '''
         els=browser.browser.find_elements_by_xpath(self._selector) #shoulb be in browser api
         if element_index >=0:
+            elslen=len(els)
+            if element_index > elslen-1:
+                print('[-] Index out of range GOT: [{}] | LEN [{}]'.format(element_index, elslen))
+                return 1
             targets=[els[element_index]]
         else:
             targets=els
@@ -119,7 +126,7 @@ class Grabis:
                 ps.set_job(job)
                 ps.set_grabber(post_action)
                 ps.session(browser)
-                ps.save_data()
+                ps.save_data(browser)
 
 ## ---  extract page data
 class Pythoness:
@@ -160,6 +167,10 @@ class Pythoness:
             gb.set_page_object(page_object)
             gb.grab()
             data=gb.get_data(field_name, pure_elements=True)
+            if 'page_action' in mapper_dict:
+                page_action=mapper_dict['page_action']
+                print('[+] Mapper start page action [{0}]'.format(page_action))
+                getattr(browser, page_action)(job=self._job)
             return data
         except Exception as e:
             print('[-] Fail to build map', e)
@@ -202,10 +213,32 @@ class Pythoness:
         '''
         url=browser.current_url
         url_id=make_url_id(url)
+
+        #build url relations
+        try:
+            locs=Locator.objects.get(url_id=url_id)
+        except ObjectDoesNotExist:
+            locs=Locator()
+            locs.url=url
+            locs.save()
+
+        try:
+            page=Page.objects.get(addr=locs.id)
+        except ObjectDoesNotExist:
+            page=Page()
+            #build html file
+            page.job=self._job
+            page.addr=locs
+            page.save()
+            #close temp file
+
         for dict_item in self._data['page_data']:
             for field_name, values in dict_item.items():
                 for value in values:
                     if not value:continue
+                    control_key=make_control_key(field_name, value, page.id)
+                    is_duplicate=PageData.objects.filter(control_key=control_key)
+                    if is_duplicate.count():continue
                     pd=PageData()
                     pd.field_name=field_name
                     pd.field_value=value

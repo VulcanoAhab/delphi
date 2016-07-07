@@ -10,7 +10,7 @@ class PageAdmin(admin.ModelAdmin):
     def page_url(self, obj):
         '''
         '''
-        return obj.page.url.url
+        return obj.page.addr.url
 
     def data(self, obj):
         '''

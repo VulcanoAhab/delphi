@@ -117,11 +117,8 @@ class BaseSeleniumBrowser:
         timeout=timeout
         eltypeDict={'xpath':By.XPATH,}
         target=(eltypeDict[eltype], target_element)
-        try:
-            element_present = EC.presence_of_element_located(target)
-            WebDriverWait(self.browser, timeout).until(element_present)
-        except TimeoutException:
-            print ("Timed out waiting for page to load")
+        element_present = EC.presence_of_element_located(target)
+        WebDriverWait(self.browser, timeout).until(element_present)
 
 
 class DriverChoices:

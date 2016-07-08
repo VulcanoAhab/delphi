@@ -11,6 +11,8 @@ def test_process(task_id=18):
     '''
     '''
 
+    init_time=time.time()
+
     #set vars
     task=Task.objects.get(pk=task_id)
     job=task.job
@@ -21,7 +23,7 @@ def test_process(task_id=18):
     if not job.confs.sequence:
         print('[+] Sequence is required')
         return
-    sequence=job.confs.sequence.grabbers.all().order_by('sequence_index')
+    sequence=job.confs.sequence.indexed_grabbers.all().order_by('sequence_index')
 
     #build driver
     wd=getattr(browsers, job.confs.driver.type)()
@@ -38,4 +40,5 @@ def test_process(task_id=18):
     ProcessSequence.mapping(mapper)
     ProcessSequence.run()
 
-
+    time_used=time.time()-init_time
+    print('[+] Process took: [{0:.2f}] seconds'.format(time_used))

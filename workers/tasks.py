@@ -23,14 +23,19 @@ def task_run(task_id):
     '''
     '''
 
+    init_time=time.time()
+
     #set vars
     task=Task.objects.get(pk=task_id)
     job=task.job
     url=task.target_url
     round_number=task.round_number
     control_key=build_control_key(url, job.id)
-    sequence=job.confs.sequence
     mapper=job.confs.mapper
+    if not job.confs.sequence:
+        print('[+] Sequence is required')
+        return
+    sequence=job.confs.sequence.indexed_grabbers.all().order_by('sequence_index')
 
     #build driver
     wd=getattr(browsers, job.confs.driver.type)()
@@ -41,14 +46,15 @@ def task_run(task_id):
     wd.get(url)
 
     #process get
-    ProcessSequence.set_job(job.id)
+    ProcessSequence.set_job(job)
     ProcessSequence.set_browser(wd)
+    ProcessSequence.set_sequence(sequence)
     ProcessSequence.mapping(mapper)
     ProcessSequence.run()
 
     wd.close()
-
-    print('[+] Done.')
+    time_used=time.time()-init_time
+    print('[+] Process took: [{0:.2f}] seconds'.format(time_used))
 
     #status task done
     task.status='done'
@@ -68,7 +74,7 @@ def task_manager(job_id, job_name):
     #need to be more intelligent -- maybe as periodic
     while True:
 
-        task = Task.objects.filter(job__id=job_id, status='creat').first()
+        task = Task.objects.filter(job__id=job_id, status='created').first()
 
         if not task:
             ask_til_three+=1

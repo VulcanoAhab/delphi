@@ -100,7 +100,6 @@ class Grabber(models.Model):
     '''
     '''
     name=models.CharField(max_length=250, unique=True)
-    sequence_index=models.IntegerField(default=0)
     extractors=models.ManyToManyField('grabbers.Extractor', blank=True)
     element_action=models.ForeignKey('grabbers.ElementAction', blank=True, null=True)
     page_action=models.ForeignKey('grabbers.PageAction', blank=True, null=True)
@@ -110,13 +109,24 @@ class Grabber(models.Model):
     def __str__(self):
         '''
         '''
-        return '::'.join([self.name, str(self.sequence_index)])
+        return self.name
 
+
+class IndexedGrabber(models.Model):
+    '''
+    '''
+    grabber=models.ForeignKey('grabbers.Grabber')
+    sequence_index=models.IntegerField(default=0)
+
+    def __str__(self):
+        '''
+        '''
+        return '::'.join([self.grabber.name, str(self.sequence_index)])
 
 class Sequence(models.Model):
     '''
     '''
-    grabbers=models.ManyToManyField('grabbers.Grabber')
+    indexed_grabbers=models.ManyToManyField('grabbers.IndexedGrabber')
     name=models.CharField(max_length=150)
 
     def __str__(self):

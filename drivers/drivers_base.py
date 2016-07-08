@@ -101,7 +101,7 @@ class BaseSeleniumBrowser:
         '''
         '''
         if not self.browser:return
-        self.browser.close()
+        self.browser.quit()
 
     @property
     def current_url(self):
@@ -109,7 +109,7 @@ class BaseSeleniumBrowser:
         '''
         return self.browser.current_url
 
-    def wait_for_element(self, target_element, eltype, timeout=30):
+    def wait_for_element(self, target_element, eltype, timeout=5):
         '''
         wait for html element to load
         for now, only working with xpath pattern

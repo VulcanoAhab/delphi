@@ -1,4 +1,4 @@
-from drivers.drivers_base import BaseSeleniumBrowser, DriverChoices
+from drivers.drivers_base import BaseSeleniumBrowser, DriverChoices, BaseRequests
 
 
 
@@ -33,12 +33,28 @@ class SeleniumFirefoxRC(BaseSeleniumBrowser):
         '''
         raise NotImplemented('Not developed yet')
 
-class PlainRequests:
+class LeanRequests(BaseRequests):
     '''
     '''
-    def __init__(self, remote_server=False):
+    def __init__(self):
         '''
         '''
-        raise NotImplemented('Not developed yet')
+        super().__init__()
+
+    def load_confs(self, confObject):
+        '''
+        '''
+        headerObj=confObject.driver.headers.all()
+        if headersObj.count():
+            headers={h.field_name:h.field_value
+                     for h in headerObj}
+            self.set_header(**headers)
+    
+    def set_header(self, **kwargs):
+        '''
+        '''
+        self._headers=kwargs 
+
 
 DriverChoices.register(SeleniumPhantom)
+DriverChoices.register(LeanRequests)

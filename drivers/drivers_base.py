@@ -1,4 +1,5 @@
 import tempfile
+import requests
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
@@ -12,6 +13,50 @@ from django.core.exceptions import ObjectDoesNotExist
 #db models
 from urlocators.models import Page, Locator, make_url_id
 
+
+#===========================================================#
+#=================== Drivers helpers =======================#
+class Helpers:
+    '''
+    '''
+    @staticmethod
+    def save_page_source(url, source, **kwargs):
+        '''
+        '''
+        #set url id 
+        url_id=make_url_id(url)
+        #get job
+        try:
+            job=kwargs['job']
+        except KeyError:
+            raise Exception('[-] Job is required to save page source')
+        #build url relations
+        try:
+            locs=Locator.objects.get(url_id=url_id)
+        except ObjectDoesNotExist:
+            locs=Locator()
+            locs.url=url
+            locs.save()
+        try:
+            page=Page.objects.get(addr=locs.id)
+        except ObjectDoesNotExist:
+            page=Page()
+            #build html file
+            page.job=job
+            page.addr=locs
+            fp=tempfile.TemporaryFile()
+            fp.write(source.encode())
+            fp.seek(0)
+            file_html=File(fp)
+            page.html=file_html
+            page.save()
+            fp.close()
+            #close temp file
+        print('[+] Done saving page [{}]'.format(url[:150]))
+
+
+#===========================================================#
+#==================== Drivers base classes =================#
 class BaseSeleniumBrowser:
     '''
     '''
@@ -55,37 +100,9 @@ class BaseSeleniumBrowser:
     def page_source(self, **kwargs):
         '''
         '''
-        try:
-            job=kwargs['job']
-        except:
-            raise Exception('[-] Job is required')
         source=self.browser.page_source
         url=self.browser.current_url
-        url_id=make_url_id(url)
-        #build url relations
-        try:
-            locs=Locator.objects.get(url_id=url_id)
-        except ObjectDoesNotExist:
-            locs=Locator()
-            locs.url=url
-            locs.save()
-
-        try:
-            page=Page.objects.get(addr=locs.id)
-        except ObjectDoesNotExist:
-            page=Page()
-            #build html file
-            page.job=job
-            page.addr=locs
-            fp=tempfile.TemporaryFile()
-            fp.write(source.encode())
-            fp.seek(0)
-            file_html=File(fp)
-            page.html=file_html
-            page.save()
-            fp.close()
-            #close temp file
-        print('[+] Done saving page')
+        Helpers.save_page_source(url, source, **kwargs)
 
     def back(self, **kwargs):
         '''
@@ -119,6 +136,69 @@ class BaseSeleniumBrowser:
         target=(eltypeDict[eltype], target_element)
         element_present = EC.presence_of_element_located(target)
         WebDriverWait(self.browser, timeout).until(element_present)
+
+
+class BaseRequests:
+    '''
+    '''
+    def __init__(self):
+        '''
+        '''
+        self._headers=None
+        self._cookies=None
+        self.browser={}
+
+    def build_driver(self, **kwargs):
+        '''
+        '''
+        session=requests.Session(headers=self._headers)
+        self.browser['session']=session
+
+    def set_cookies(self, **cookies):
+        '''
+        '''
+        raise NotImplemented('[-] Not implemeted yet::must be a CookieJar')
+
+    def get_page_source(self):
+        '''
+        '''
+        return self.browser['source']
+
+    def page_source(self, **kwargs):
+        '''
+        '''
+        source=self.browser['source']
+        url=self.browser['url']
+        Helpers.save_page_source(url, source, **kwargs)
+    
+    def back(self, **kwargs):
+        '''
+        '''
+        raise TypeError('Requests driver does not have history')
+
+    def get(self, url):
+        '''
+        '''
+        result=self.browser['session'].get(url)
+        if result.status_code != 200:
+            msg='LeanRequests GET fail. Headers [{}]'.format(result.headers)
+            raise Exception(msg)
+        self.browser['url']=url
+        self.browser['source']=result.content
+
+    def close(self):
+        '''
+        '''
+        if not self.browser.get('session'):return
+        self.browser['session'].close()
+        self.browser={}
+
+    @property
+    def current_url(self):
+        '''
+        '''
+        return self.browser['url']
+
 
 
 class DriverChoices:

@@ -192,6 +192,9 @@ class Pythoness:
                 print('[-] Fail to load conf in Grabis', e)
                 return
             if 'element_action' in self._conf:
+                #test browser type
+                if browser.__class__.__name__ == 'LeanRequests':
+                    raise TypeError('[-] Lean Requests has no action')
                 post_action=self._conf['post_action']
                 gb.action(self._conf['element_action'], browser,
                           element_index, post_action=post_action,

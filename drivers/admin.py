@@ -8,6 +8,7 @@ class DriverAdmin(admin.ModelAdmin):
     '''
     list_display=['name', 'type']
 
+<<<<<<< HEAD
 class HeaderAdmin(admin.ModelAdmin):
     '''
     '''

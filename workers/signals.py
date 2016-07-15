@@ -8,9 +8,9 @@ import time
 def job_manager(sender, instance, **kwargs):
     '''
     '''
-    if instance.status != 'creat':return
-    instance.status='inq'
+    if instance.status != 'create':return
+    instance.status='in_queue'
     instance.save()
-    time.sleep(3)
+    time.sleep(0.1)
     job_starter.delay(instance.id)
 

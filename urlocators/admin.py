@@ -8,7 +8,8 @@ class PageAdmin(admin.ModelAdmin):
     '''
     list_display=('page_url', 'job_names')
     readonly_fields=('created_at', 'modified_at')
-    search_fields=('locator__url','job__seed')
+    search_fields=('addr__url','job__seed', 'job__name')
+    list_filter=['job__name',]
 
     def page_url(self, obj):
         '''

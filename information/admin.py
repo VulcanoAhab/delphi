@@ -6,6 +6,7 @@ class PageAdmin(admin.ModelAdmin):
     '''
     '''
     list_display=['field_name', 'page_url', 'data']
+    list_filter=['field_name',]
 
     def page_url(self, obj):
         '''

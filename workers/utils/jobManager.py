@@ -7,7 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 class ElementsBuilder:
     '''
     '''
-    
+
     @classmethod
     def grabber(cls, grabber_dict):
         '''
@@ -15,36 +15,58 @@ class ElementsBuilder:
         #set vars
         target={}
         page_action=None
+
         #get values
         name=grabber_dict['name']
-        grabberObj, grabberCreated=Grabber.objects.get_or_create(name=name)
-        if not grabberCreated: return grabberObj
+        #test if exists
+        grabberQuery=Grabber.objects.filter(name=name)
+        if grabberQuery.count():
+            #return most recent
+            return grabberQuery[0]
+        #build obj
+        grabberObj=Grabber()
+        grabberObj.name=name
         if 'target' in grabber_dict:
             target=grabber_dict['target']
         if 'page_action' in grabber_dict:
-            page_action=grabber_dict['page_action'] 
+            page_action=grabber_dict['page_action']
         if target:
             field_name=target['field_name']
             field_selector=target['field_selector']
             selector_type=target['selector_type']
-            targetObj=Target(field_name=field_name, 
-                             field_selector=field_selector,
-                             selector_type=selector_type)
-            targetObj.save()
+            #soon create a hash field for that
+            targetObjQuery=Target.objects.filter(field_name=field_name,
+                                                field_selector=field_selector,
+                                                selector_type=selector_type)
+            if targetObjQuery.count():
+                targetObj=targetObjQuery[0]
+            else:
+                targetObj=Target(field_name=field_name,
+                                 field_selector=field_selector,
+                                 selector_type=selector_type)
+                targetObj.save()
             grabberObj.target=targetObj
-            if 'extractor' in grabber_dict:
-                extractor=grabber_dict['extractor']
-                exObj, exCreated=Extractor.objects.get_or_create(type=extractoO)
-                grabberObj.extractor=exObj
-            if 'element_action' in grabber_dict:
+            if ('element_action' in grabber_dict
+                and grabber_dict['element_action']):
                 action=grabber_dict['element_action']
-                actionObj=Action(type=action.get('type'), name=action['name'])
-            if 'post_action' in grabber_dict:
-                postis=grabber_dict['post_element_action']
+                actionObj=ElementAction(type=action.get('type'),
+                                        name=action['name'])
+            if ('post_action' in grabber_dict
+                and grabber_dict['post_action']):
+                postis=grabber_dict['post_action']
                 name=postis['name']
                 grabber_post=postis['grabber']
                 grabber_post_obj=cls.grabber(grabber_post)
                 grabberObj.post_action=grabber_post_obj
+            #if something fails::problem of saving grabber before time
+            if 'extractors' in grabber_dict:
+                grabberObj.save()
+                extractors=grabber_dict['extractors']
+                for extractor in extractors:
+                    exObj, exCreated=Extractor.objects.get_or_create(
+                                                type=extractor['type'])
+                    if exCreated: exObj.save()
+                    grabberObj.extractors.add(exObj)
         if page_action:
             paType=page_action['type']
             paObj,paCreated=PageAction.objects.get_or_create(type=paType)
@@ -58,57 +80,77 @@ class ElementsBuilder:
         '''
         has_headers=0
         headersObjs=[]
-        if 'get' in header_dict:
+        if 'get' in header_dict and header_dict['get']:
             header_name=header_dict['get']
-            headerObj=Header.objects.filter(header_name=header_name)
-            has_headers=headerObj.count()
-        if not has_headers and header_dict['set']::
-            sets_name=header_dict['set']['name']
+            headerObjsQuery=Header.objects.filter(header_name=header_name)
+            has_headers=headerObjsQuery.count()
+            if has_headers:
+                headersObjs=list(headerObjsQuery)
+        if not has_headers and header_dict['set']:
+            header_name=header_dict['set']['name']
             sets=header_dict['set']['fields']
-            if not sets:
-                for field_name, field_value in sets.item():
-                    headerObj=Header(field_name=field_name, 
-                             field_value=field_value,
-                             header_name=sets_name)
-                    headerObj.save()
+            if sets:
+                for field_name, field_value in sets.items():
+                    headerQuery=Header.objects.filter(header_name=header_name,
+                                                      field_name=field_name)
+                    if headerQuery.count():
+                        headerObj=headerQuery[0] #for now get teh most recent
+                    else:
+                        headerObj=Header(field_name=field_name,
+                                         field_value=field_value,
+                                         header_name=header_name)
+                        headerObj.save()
                     headersObjs.append(headerObj)
-        return headerObjs
+        return headersObjs
 
     @classmethod
-    def driver(cls, name, headers={}):
+    def driver(cls, name, driver_type=None, headers={}):
         '''
         driver for now only get
         '''
         driver,created=Driver.objects.get_or_create(name=name)
-        if not created: return driver
-        driver.save()
+        if not created and not driver_type and not headers: return driver
+        if driver_type:
+            driver.type=driver_type
         if headers:
+            if created:driver.save()
             headerObjs=cls.headers(headers)
             for header in headerObjs:
-                driver.add(header)
-            driver.save()
+                driver.headers.add(header)
+        driver.save()
         return driver
 
     @classmethod
     def sequence(cls, sequence_name=None, grabbers_list=[]):
         '''
         '''
-        sequence,created=Sequence.objects.get_or_create(name=sequence_name)
-        if not created:return sequence
+        sequence=None
+        sequenceQuery=Sequence.objects.filter(name=sequence_name)
+        if sequenceQuery.count():
+            return sequenceQuery[0]
+        sequence=Sequence()
+        sequence.name=sequence_name
+        #for many to many adds::newd to delete in fail
         sequence.save()
-        for grabber_dict in grabbers_list:
-            index=grabber_dict['index']
-            grabberObj=cls.grabber(grabber_dict)
-            indexedQuery=IndexedGrabber.objects.filter(grabber=grabberObj, 
-                                                               index=index)
-            if not indexedQuery.count():
-                indexedGrabberObj=IndexedGrabber(grabber=grabberObj, 
-                                                            index=index)
-            else:
-                indexedGrabberObj=indexedQuery[0]
-            sequence.indexedGrabber=indexedGrabberObj
-        return sequence
-    
+        try:
+            for grabber_dict in grabbers_list:
+                index=grabber_dict['index']
+                grabberObj=cls.grabber(grabber_dict)
+                indexedQuery=IndexedGrabber.objects.filter(grabber=grabberObj,
+                                                           sequence_index=index)
+                if not indexedQuery.count():
+                    indexedGrabberObj=IndexedGrabber(grabber=grabberObj,
+                                                     sequence_index=index)
+                    indexedGrabberObj.save()
+                else:
+                    indexedGrabberObj=indexedQuery[0]
+                sequence.indexed_grabbers.add(indexedGrabberObj)
+            sequence.save()
+            return sequence
+        except Exception as e:
+            if sequence: sequence.delete()
+            raise Exception(e)
+
     @classmethod
     def mapper(cls, mapper_dict):
         '''
@@ -124,7 +166,7 @@ class ElementsBuilder:
             page_action=mapper_dict['page_action']
             paType=page_action['type']
             paObj,paCreated=PageAction.objects.get_or_create(type=paType)
-            mapperObj.page_action=paObj 
+            mapperObj.page_action=paObj
         mapperObj.save()
         return mapperObj
 
@@ -135,7 +177,7 @@ class JobBuilder:
         '''
         '''
         self.jobDict=jobDict
-    
+
     def create_job(self):
         '''
         '''
@@ -145,7 +187,7 @@ class JobBuilder:
             jobObj=Job.objects.get(name=job_name)
             raise Exception('Job Already Exist')
         except ObjectDoesNotExist:
-            pass 
+            pass
         #jobConfig first try
         jobConfig_name=jobDict['job_config']['name']
         try:
@@ -153,8 +195,9 @@ class JobBuilder:
         except ObjectDoesNotExist:
             #driver
             driver_name=jobDict['driver']['name']
-            headers=jobDict['driver']['headers']
-            driverObj=ElementsBuilder.driver(driver_name, headers=headers)
+            driver_type=jobDict['driver'].get('type', None)
+            headers=jobDict['driver'].get('headers', {})
+            driverObj=ElementsBuilder.driver(driver_name, driver_type, headers=headers)
             #sequence
             sequence=jobDict['sequence']
             sequence_name=sequence['name']
@@ -165,7 +208,7 @@ class JobBuilder:
             if 'mapper' in jobDict:
                 mapper=jobDict['mapper']
                 mapperObj=ElementsBuilder.mapper(mapper)
-            #----- jobconfig 
+            #----- jobconfig
             jobConfigObj=JobConfig(
                 name=jobConfig_name,
                 sequence=sequenceObj,
@@ -174,7 +217,7 @@ class JobBuilder:
                 )
             jobConfigObj.save()
         #----- job
-        jobObj=Job(name=job_name, 
+        jobObj=Job(name=job_name,
                    seed=jobDict['seed'],
                    status=jobDict['status'],
                    confs=jobConfigObj)

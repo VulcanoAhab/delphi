@@ -17,7 +17,7 @@ class SeleniumPhantom(BaseSeleniumBrowser):
         for k,v in kwargs.items():
             k=''.join([base, k])
             self._driver.DesiredCapabilities.PHANTOMJS[k]=v
-    
+
     def load_confs(self, confObject):
         '''
         '''
@@ -44,16 +44,16 @@ class LeanRequests(BaseRequests):
     def load_confs(self, confObject):
         '''
         '''
-        headerObj=confObject.driver.headers.all()
+        headersObj=confObject.driver.headers.all()
         if headersObj.count():
             headers={h.field_name:h.field_value
-                     for h in headerObj}
+                     for h in headersObj}
             self.set_header(**headers)
-    
+
     def set_header(self, **kwargs):
         '''
         '''
-        self._headers=kwargs 
+        self._headers=kwargs
 
 
 DriverChoices.register(SeleniumPhantom)

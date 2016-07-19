@@ -85,7 +85,7 @@ def task_manager(job_id, job_name):
 
         print('[+] Starting task [{0}]'.format(task.target_url))
 
-        task.status='on'
+        task.status='running'
         task.save()
         task_run.delay(task.id)
         task=None
@@ -102,13 +102,13 @@ def job_starter(job_id=1):
     '''
     print('[+] Starting job')
     job=Job.objects.get(pk=job_id)
-    job.status='on'
+    job.status='running'
     job.save()
 
     #create first task
     task=Task()
-    task.target_url=job.seed.url
-    task.status='creat'
+    task.target_url=job.seed
+    task.status='created'
     task.round_number=0
     task.job=job
     task.save()

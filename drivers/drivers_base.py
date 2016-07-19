@@ -23,7 +23,7 @@ class Helpers:
     def save_page_source(url, source, **kwargs):
         '''
         '''
-        #set url id 
+        #set url id
         url_id=make_url_id(url)
         #get job
         try:
@@ -151,7 +151,8 @@ class BaseRequests:
     def build_driver(self, **kwargs):
         '''
         '''
-        session=requests.Session(headers=self._headers)
+        session=requests.Session()
+        session.headers=self._headers
         self.browser['session']=session
 
     def set_cookies(self, **cookies):
@@ -170,7 +171,7 @@ class BaseRequests:
         source=self.browser['source']
         url=self.browser['url']
         Helpers.save_page_source(url, source, **kwargs)
-    
+
     def back(self, **kwargs):
         '''
         '''
@@ -199,7 +200,11 @@ class BaseRequests:
         '''
         return self.browser['url']
 
-
+    #dummy - will improve this
+    def wait_for_element(self, target_element, eltype, timeout=5):
+        '''
+        '''
+        return
 
 class DriverChoices:
     '''

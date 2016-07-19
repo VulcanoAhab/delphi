@@ -1,5 +1,5 @@
 from django.contrib import admin
-from drivers.models import Driver, Header, Cookie 
+from drivers.models import Driver, Header, Cookie
 # Register your models here.
 
 
@@ -8,7 +8,6 @@ class DriverAdmin(admin.ModelAdmin):
     '''
     list_display=['name', 'type']
 
-<<<<<<< HEAD
 class HeaderAdmin(admin.ModelAdmin):
     '''
     '''

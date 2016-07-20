@@ -60,8 +60,13 @@ class Grabis:
         '''
         #wait for element
         try:
-            browser.wait_for_element(selector, eltype=eltype)
-        except:
+            waitis=getattr(browser, 'wait_for_element')
+            waitis(selector, eltype=eltype)
+        except AttributeError:
+            #it's a lean request
+            pass
+        except Exception as e:
+            print('[-] Fail in wait for element', e)
             return None
         source=browser.get_page_source()
         return html.fromstring(source)
@@ -189,6 +194,7 @@ class Pythoness:
                 gb.set_selector(selector)
                 gb.set_page_object(page_object)
             except Exception as e:
+                print('=====', e)
                 print('[-] Fail to load conf in Grabis', e)
                 return
             if 'element_action' in self._conf:
@@ -214,11 +220,8 @@ class Pythoness:
     def save_data(self, browser):
         '''
         '''
-        print('====DATA', self._data)
-
         url=browser.current_url
         url_id=make_url_id(url)
-
         #build url relations
         try:
             locs=Locator.objects.get(url_id=url_id)

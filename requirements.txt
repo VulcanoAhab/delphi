@@ -8,3 +8,4 @@ kombu==3.0.35
 lxml==3.6.0
 pytz==2016.4
 selenium==2.53.1
+requests==2.10.0

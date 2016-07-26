@@ -43,7 +43,7 @@ class UrlsFromPaging:
             new_params[cls._target_param]=param_value
             new_url=copy.deepcopy(cls._base_url_list)
             new_url[4]=new_params
-            cls._urls_list.append(uparse.parse.unparse(new_url))
+            cls._urls_list.append(uparse.urlunparse(new_url))
     
     @classmethod
     def get_urls(cls):

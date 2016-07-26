@@ -73,6 +73,6 @@ class TaskFromUrls:
         '''
         '''
         for url in cls._urls:
-            task=Task(target_url=url, job=cls._job, status='toba') #to be aproved
+            task=Task(target_url=url, job=cls._job, status='to_approve') #to be aproved
             task.save()
             time.sleep(0.1)

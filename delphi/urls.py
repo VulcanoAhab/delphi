@@ -15,7 +15,7 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.conf import settings
-from django.conf.urls.defaults import handler404, handler403, handler500
+from django.conf.urls import handler404, handler403, handler500
 
 
 urlpatterns = [

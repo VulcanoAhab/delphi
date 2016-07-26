@@ -39,7 +39,7 @@ class UrlsFromPaging:
         '''
         '''
         for param_value in cls._paging_range:
-            new_params=copy.deepcopy(cls.params)
+            new_params=copy.deepcopy(cls._params)
             new_params[cls._target_param]=param_value
             new_url=copy.deepcopy(cls._base_url_list)
             new_url[4]=new_params

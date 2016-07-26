@@ -32,7 +32,7 @@ class UrlsFromPaging:
     def set_paging_range(cls, start_value, max_value, step_size=1):
         '''
         '''
-        cls._paging_range=list(start_value, max_value, step_size)
+        cls._paging_range=list(range(start_value, max_value, step_size))
 
     @classmethod
     def build_urls(cls):

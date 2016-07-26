@@ -4,4 +4,4 @@ from django.shortcuts import render
 def sayError(request):
     '''
     '''
-    return render(context, 'sayError.html', {})
+    return render(request, 'sayError.html', {})

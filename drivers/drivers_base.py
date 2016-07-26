@@ -185,7 +185,7 @@ class BaseRequests:
             msg='LeanRequests GET fail. Headers [{}]'.format(result.headers)
             raise Exception(msg)
         self.browser['url']=url
-        self.browser['source']=result.content
+        self.browser['source']=result.text
 
     def close(self):
         '''

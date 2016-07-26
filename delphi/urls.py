@@ -24,5 +24,5 @@ urlpatterns = [
 static_url=url(r'^static\/(?P<path>.*)$',
                 'django.views.static.serve',
                 {'document_root': settings.STATIC_ROOT})
-urlpatterns += static_url
+urlpatterns.append(static_url)
 

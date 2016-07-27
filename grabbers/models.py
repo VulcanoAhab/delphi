@@ -13,6 +13,8 @@ class PageAction(models.Model):
     _pa=[
         ('back','back'),
         ('page_source', 'page_source'),
+        ('get_header_field', 'get_header_field'),
+        ('switch_to_frame', 'switch_to_frame'),
     ]
     type=models.CharField(max_length=50, choices=_pa, default='page_source')
     index=models.IntegerField(default=0)
@@ -61,6 +63,7 @@ class Extractor(models.Model):
         ('id', 'id'),
         ('size', 'size'),
         ('title','title')
+        ('Location','Location')
             ]
 
     type=models.CharField(max_length=100, choices=_exChoices)

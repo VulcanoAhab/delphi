@@ -212,9 +212,15 @@ class Pythoness:
                 data=gb.get_data(field_name, attrs)
                 self._data['page_data']=data
         if 'page_action' in self._conf:
+            #it's dirty - needs to improve
             page_action=self._conf['page_action']
+            field_name=None
+            if 'extractors' in self._conf:
+                field_name=self._conf['extractors']
             print('[+] Start page action [{0}]'.format(page_action))
-            getattr(browser, page_action)(job=self._job)
+            getattr(browser, page_action)(job=self._job, 
+                                          page_data=self._data,
+                                          header_field=field_name)
 
 
     def save_data(self, browser):

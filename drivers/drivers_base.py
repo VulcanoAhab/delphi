@@ -136,6 +136,11 @@ class BaseSeleniumBrowser:
         target=(eltypeDict[eltype], target_element)
         element_present = EC.presence_of_element_located(target)
         WebDriverWait(self.browser, timeout).until(element_present)
+    
+    def switch_to_frame(self, **kwargs):
+        '''
+        '''
+        raise NotImplemented('Not implemented yet')
 
 
 class BaseRequests:
@@ -205,6 +210,34 @@ class BaseRequests:
         '''
         '''
         return
+
+    def get_header_field(self, **kwargs):
+        '''
+        '''
+        req=['result_container',
+             'header_field',
+             'job']
+        
+        for r in req:
+            if r in req:continue
+            raise TypeError('[-] Missing field: [{}]'.format(r))
+
+        headers=self.browser.headers 
+        if field_name not in headers or not headers[field_name]:
+            msg='[-] Header field not found. Field: {0} | Headers: {1}'
+            print(msg.format(field_name, headers))
+            return
+        
+        field_value=headers[field_name]
+        key_name='-'.join([job.name, field_name.lower()])
+        kwargs['result_container'].append({key_name:field_value})
+        
+
+    def switch_to_frame(self, **kwargs):
+        '''
+        '''
+        raise TypeError('[-] LeanRequests is unable to switch frames')
+
 
 class DriverChoices:
     '''

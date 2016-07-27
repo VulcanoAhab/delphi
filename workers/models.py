@@ -6,7 +6,8 @@ _status=[
     ('in_queue', 'in_queue'), #conf loaded - all ok to go
     ('created', 'created'), #just created job
     ('done','done'),
-    ('running','running')
+    ('running','running'),
+    ('to_approve','to_approve'),
         ]
 
 class JobConfig(models.Model):

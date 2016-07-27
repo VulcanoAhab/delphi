@@ -32,18 +32,18 @@ class UrlsFromPaging:
     def set_paging_range(cls, start_value, max_value, step_size=1):
         '''
         '''
-        cls._paging_range=list(start_value, max_value, step_size)
+        cls._paging_range=list(range(start_value, max_value, step_size))
 
     @classmethod
     def build_urls(cls):
         '''
         '''
         for param_value in cls._paging_range:
-            new_params=copy.deepcopy(cls.params)
+            new_params=copy.deepcopy(cls._params)
             new_params[cls._target_param]=param_value
             new_url=copy.deepcopy(cls._base_url_list)
             new_url[4]=new_params
-            cls._urls_list.append(uparse.unparse(new_url))
+            cls._urls_list.append(uparse.urlunparse(new_url))
     
     @classmethod
     def get_urls(cls):
@@ -73,6 +73,6 @@ class TaskFromUrls:
         '''
         '''
         for url in cls._urls:
-            task=Task(target_url=url, job=cls._job, status='toba') #to be aproved
+            task=Task(target_url=url, job=cls._job, status='to_approve') #to be aproved
             task.save()
             time.sleep(0.1)

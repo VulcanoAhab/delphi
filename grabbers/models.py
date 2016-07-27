@@ -62,8 +62,8 @@ class Extractor(models.Model):
         ('class', 'class'),
         ('id', 'id'),
         ('size', 'size'),
-        ('title','title')
-        ('Location','Location')
+        ('title','title'),
+        ('Location','Location'),
             ]
 
     type=models.CharField(max_length=100, choices=_exChoices)

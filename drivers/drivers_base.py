@@ -136,7 +136,7 @@ class BaseSeleniumBrowser:
         target=(eltypeDict[eltype], target_element)
         element_present = EC.presence_of_element_located(target)
         WebDriverWait(self.browser, timeout).until(element_present)
-    
+
     def switch_to_frame(self, **kwargs):
         '''
         '''
@@ -182,10 +182,10 @@ class BaseRequests:
         '''
         raise TypeError('Requests driver does not have history')
 
-    def get(self, url):
+    def get(self, url, allow_redirects=False):
         '''
         '''
-        result=self.browser['session'].get(url)
+        result=self.browser['session'].get(url, allow_redirects=allow_redirects)
         if result.status_code != 200:
             msg='LeanRequests GET fail. Headers [{}]'.format(result.headers)
             raise Exception(msg)
@@ -217,21 +217,21 @@ class BaseRequests:
         req=['result_container',
              'header_field',
              'job']
-        
+
         for r in req:
             if r in req:continue
             raise TypeError('[-] Missing field: [{}]'.format(r))
 
-        headers=self.browser.headers 
+        headers=self.browser.headers
         if field_name not in headers or not headers[field_name]:
             msg='[-] Header field not found. Field: {0} | Headers: {1}'
             print(msg.format(field_name, headers))
             return
-        
+
         field_value=headers[field_name]
         key_name='-'.join([job.name, field_name.lower()])
         kwargs['result_container'].append({key_name:field_value})
-        
+
 
     def switch_to_frame(self, **kwargs):
         '''

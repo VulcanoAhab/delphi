@@ -16,16 +16,14 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls import handler404, handler403, handler500
-
+from django.views.static import serve
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
 ]
 
 #serving static - as a devel server 
-static_url=url(r'^static\/(?P<path>.*)$',
-                'django.views.static.serve',
-                {'document_root': settings.STATIC_ROOT})
+static_url=url(r'^static\/(?P<path>.*)$', server,{'document_root': settings.STATIC_ROOT})
 urlpatterns.append(static_url)
 
 #error handling

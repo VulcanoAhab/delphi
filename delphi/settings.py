@@ -20,10 +20,16 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
 
 if os.environ.get('env_dev') is not None:
-    from delphi.settings_dev import *
+    #devel settings
+    #to use devel settings set environment var $env_dev to not None
+    from delphi.settings_dev import * 
 else:
-    from delphi.settings_prod import *
-
+    try:
+        #to use production settings just create 
+        #this file with setting on server
+        from delphi.settings_prod import * #production settings
+    except ImportError:
+        from delphi.settings_default import * #default
 
 # Application definition
 
@@ -77,18 +83,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'delphi.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/1.8/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/

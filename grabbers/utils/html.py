@@ -30,8 +30,8 @@ class Grabis:
         datum=[]
         for ats in attrs:
             if ats == 'text_content':
-                content=htmlElement.text.strip()
-                if not content:
+                content=htmlElement.text
+                if not content or not content.strip():
                     content=htmlElement.text_content()
                 datum.append(content)
             elif ats == 'iframe_source':

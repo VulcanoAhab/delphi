@@ -1,12 +1,14 @@
+import functools
 import urllib.parse as uparse
 import copy
 import time
 import re
 
 from workers.models import Task, Job
-
+from information.models import PageData
 
 #========================== / base classes \ ==========================
+# under construction -- still designing patterns 
 
 class UrlsOneVarPaging:
     '''
@@ -53,15 +55,49 @@ class UrlsOneVarPaging:
         '''
         return cls._urls_list
 
+
+class TaskFromResults:
+    '''
+    '''
+    _target_job=None
+    _target_query=None
+    _target_urls=[]
+
+    @classmethod
+    def set_job(cls, job_id):
+        '''
+        '''
+        cls._target_job=job_id
+    
+    @classmethod
+    def pull_results(cls):
+        '''
+        '''
+        cls._target_query=PageData.objects.filter(page__job=cls._target_job)
+
+
+    @classmethod
+    def process_results(cls, process_function):
+        '''
+        '''
+        cls._target_urls=process_function(cls._target_query)
+
+    @classmethod
+    def get_urls(cls):
+        '''
+        '''
+        return cls._target_urls
+
+
 class TaskFromUrls:
     '''
     '''
 
     @classmethod
-    def set_job(cls, job):
+    def set_job(cls, job_id):
         '''
         '''
-        cls._job=job
+        cls._job=Job.objects.get(id=job_id)
     
     @classmethod
     def set_urls(cls, urls):
@@ -119,8 +155,54 @@ class OneVarPagingTasks:
         cls._produce_urls()
         print('[+] Done creating {} urls.'.format(len(cls._urls)))
         #produce tasks
-        job=Job.objects.get(id=cls._job_id)
-        TaskFromUrls.set_job(job)
+        TaskFromUrls.set_job(cls._job_id)
         TaskFromUrls.set_urls(cls._urls)
         TaskFromUrls.build_tasks()
         print('[+] Done creatinfg tasks from urls')
+
+
+class ResultsTasks:
+    '''
+    '''
+    _tasks_job=None
+    _results_job=None
+    
+    @staticmethod
+    def tasks_by_field(field):
+        '''
+        '''
+        def extract_values(field, target_query):
+            '''
+            '''
+            query=target_query.filter(field_name=field)
+            print('[+] Query for field {} has {} results'.format(field,query.count()))
+            return [r.field_value for r in query]
+        return functools.partial(extract_values, field)
+
+    @classmethod
+    def set_tasks_job(cls, job_id):
+        '''
+        '''
+        cls._tasks_job=job_id
+
+    @classmethod
+    def set_results_job(cls, job_id):
+        '''
+        '''
+        cls._results_job=job_id
+
+    @classmethod
+    def produce_tasks(cls, producer_fn):
+        '''
+        '''
+        TaskFromResults.set_job(cls._results_job)
+        TaskFromResults.pull_results()
+        TaskFromResults.process_results(producer_fn)
+        task_urls=TaskFromResults.get_urls()
+        print('[+] Done mining {} target urls'.format(len(task_urls)))
+        TaskFromUrls.set_job(cls._tasks_job)
+        TaskFromUrls.set_urls(task_urls)
+        TaskFromUrls.build_tasks()
+        print('[+] Done building tasks...')
+
+

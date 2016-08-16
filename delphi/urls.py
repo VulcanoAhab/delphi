@@ -23,7 +23,7 @@ urlpatterns = [
 ]
 
 #serving static - as a devel server 
-static_url=url(r'^static\/(?P<path>.*)$', server,{'document_root': settings.STATIC_ROOT})
+static_url=url(r'^static\/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT})
 urlpatterns.append(static_url)
 
 #error handling

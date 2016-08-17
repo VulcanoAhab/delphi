@@ -82,6 +82,8 @@ class BaseSeleniumBrowser:
             self.browser=getattr(self._driver, self._driver_name)()
         if self._driver_name == 'PhantomJS':
             self.browser.set_window_size(1124, 850)
+        #wait some time for elements
+        self.browser.implicitly_wait(3)
 
     def set_cookies(self, **cookies):
         '''
@@ -117,7 +119,6 @@ class BaseSeleniumBrowser:
     def close(self):
         '''
         '''
-        if not self.browser:return
         self.browser.quit()
 
     @property
@@ -126,7 +127,7 @@ class BaseSeleniumBrowser:
         '''
         return self.browser.current_url
 
-    def wait_for_element(self, target_element, eltype, timeout=5):
+    def wait_for_element(self, target_element, eltype, timeout=3):
         '''
         wait for html element to load
         for now, only working with xpath pattern
@@ -135,7 +136,11 @@ class BaseSeleniumBrowser:
         eltypeDict={'xpath':By.XPATH,}
         target=(eltypeDict[eltype], target_element)
         element_present = EC.presence_of_element_located(target)
-        WebDriverWait(self.browser, timeout).until(element_present)
+        try:
+            WebDriverWait(self.browser, timeout).until(element_present)
+        except Exeption as e:
+            print('Did not find the element', target_element)
+            return 1
 
     def switch_to_frame(self, **kwargs):
         '''

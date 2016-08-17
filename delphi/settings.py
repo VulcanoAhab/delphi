@@ -19,10 +19,10 @@ import os
 if os.environ.get('env_dev') is not None:
     #devel settings
     #to use devel settings set environment var $env_dev to not None
-    from delphi.settings_dev import * 
+    from delphi.settings_dev import *
 else:
     try:
-        #to use production settings just create 
+        #to use production settings just create
         #this file with setting on server
         from delphi.settings_prod import * #production settings
     except ImportError:
@@ -45,7 +45,7 @@ INSTALLED_APPS = (
     'grabbers',
     'urlocators',
     'information',
-    #'proxy',
+    'proxy',
 
     'celery',
 )

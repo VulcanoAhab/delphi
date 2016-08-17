@@ -1,5 +1,7 @@
 import tempfile
 import requests
+import os
+import signal
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
@@ -67,6 +69,8 @@ class BaseSeleniumBrowser:
         self._driver=webdriver
         self.remote_server=remote_server
         self.host=''
+        self.pid=None
+        self.browser=None
 
     def set_host(self, host):
         '''
@@ -82,6 +86,7 @@ class BaseSeleniumBrowser:
             self.browser=getattr(self._driver, self._driver_name)()
         if self._driver_name == 'PhantomJS':
             self.browser.set_window_size(1124, 850)
+            self.pid=self.browser.service.process.pid
         #wait some time for elements
         self.browser.implicitly_wait(3)
 
@@ -119,7 +124,11 @@ class BaseSeleniumBrowser:
     def close(self):
         '''
         '''
+        if not self.browser:return
         self.browser.quit()
+        if not self.pid: return
+        #phantom ensurance
+        os.kill(self.pid, signal.SIGKILL)
 
     @property
     def current_url(self):

@@ -128,12 +128,6 @@ class BaseSeleniumBrowser:
         if self._driver_name == 'PhantomJS': 
             self.browser.service.process.send_signal(signal.SIGTERM)
         self.browser.quit()
-        #if not self.pid: return
-        #phantom ensurance
-        #try:
-        #    os.kill(self.pid, signal.SIGKILL)
-        #except ProcessLookupError:
-        #    return
 
     @property
     def current_url(self):

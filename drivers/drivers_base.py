@@ -128,7 +128,10 @@ class BaseSeleniumBrowser:
         self.browser.quit()
         if not self.pid: return
         #phantom ensurance
-        os.kill(self.pid, signal.SIGKILL)
+        try:
+            os.kill(self.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            return
 
     @property
     def current_url(self):

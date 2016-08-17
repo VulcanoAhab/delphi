@@ -1,5 +1,6 @@
 import time
 import traceback
+import psutil
 
 from workers.models import Job
 from delphi.celery import app
@@ -25,16 +26,17 @@ def task_run(task_id):
 
     init_time=time.time()
 
-    #set vars
+    #must have
     task=Task.objects.get(pk=task_id)
     job=task.job
+    if not job.confs.sequence:
+        print('[+] Sequence is required')
+        return
+    #loading vars
     url=task.target_url
     round_number=task.round_number
     control_key=build_control_key(url, job.id)
     mapper=job.confs.mapper
-    if not job.confs.sequence:
-        print('[+] Sequence is required')
-        return
     sequence=job.confs.sequence.indexed_grabbers.all().order_by('sequence_index')
 
     #build driver
@@ -80,7 +82,7 @@ def task_manager(job_id, job_name):
             ask_til_three+=1
             if ask_til_three > 3:break
             print('[-] No task for job [{0}]'.format(job_name))
-            #time.sleep(30*ask_til_three)
+            time.sleep(30*ask_til_three)
             continue
 
         print('[+] Starting task [{0}]'.format(task.target_url))
@@ -105,16 +107,22 @@ def job_starter(job_id=1):
     job.status='running'
     job.save()
 
-    #create first task
-    task=Task()
-    task.target_url=job.seed
-    task.status='created'
-    task.round_number=0
-    task.job=job
-    task.save()
-    time.sleep(0.1)
+    #test proxy
+    proxy=job.confs.proxy
+    if proxy and not proxy.running:
+        print('[+] Proxy is set but not running...')
+        exit(0)
+
+    if job.seed:
+        #create first task
+        task=Task()
+        task.target_url=job.seed
+        task.status='created'
+        task.round_number=0
+        task.job=job
+        task.save()
+        time.sleep(1)
     task_manager.delay(job_id, job.name)
-
-    #monitor results
-
+    #here will soon implement the new jobs confs for tasks
+    #for example create new jobs from element(URL) XYZ
 

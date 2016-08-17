@@ -3,7 +3,8 @@ from django.db import models
 
 _SPATTERN = [
         #('cs', 'css'),
-        ('xp', 'xpath'),
+        ('xpath', 'xpath'),
+        ('regex', 'regex'),
     ]
 
 
@@ -58,7 +59,7 @@ class Extractor(models.Model):
     _exChoices=[
         ('href', 'href'),
         ('text_content', 'text_content'),
-        ('iframe_source', 'iframe_source'),
+        ('generic_link', 'generic_link'),
         ('class', 'class'),
         ('id', 'id'),
         ('size', 'size'),
@@ -78,7 +79,7 @@ class Target(models.Model):
     '''
     field_name=models.CharField(max_length=250)
     field_selector=models.CharField(max_length=250)
-    selector_type=models.CharField(max_length=2, choices=_SPATTERN, default='xp')
+    selector_type=models.CharField(max_length=10, choices=_SPATTERN, default='xpath')
 
     def __str__(self):
         '''

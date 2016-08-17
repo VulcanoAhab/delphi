@@ -34,7 +34,7 @@ class Grabis:
                 if not content:
                     content=htmlElement.text_content()
                 datum.append(content)
-            elif ats == 'iframe_source':
+            elif ats == 'generic_link':
                 src=None
                 for possible in ['src','data-src','href']:
                     src=htmlElement.attrib.get(possible)
@@ -218,7 +218,7 @@ class Pythoness:
             if 'extractors' in self._conf:
                 field_name=self._conf['extractors']
             print('[+] Start page action [{0}]'.format(page_action))
-            getattr(browser, page_action)(job=self._job, 
+            getattr(browser, page_action)(job=self._job,
                                           page_data=self._data,
                                           header_field=field_name)
 

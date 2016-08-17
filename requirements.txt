@@ -11,3 +11,9 @@ pytz==2016.4
 requests==2.10.0
 requests-file==1.4
 selenium==2.53.5
+browsermob-proxy==0.7.1
+tldextract==2.0.1
+psutil==4.3.0
+
+
+

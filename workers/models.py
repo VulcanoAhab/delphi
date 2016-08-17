@@ -17,6 +17,9 @@ class JobConfig(models.Model):
     driver=models.ForeignKey('drivers.Driver')
     sequence=models.ForeignKey('grabbers.Sequence')
     mapper=models.ForeignKey('grabbers.Mapper', blank=True, null=True)
+    proxy=models.ForeignKey('proxy.Proxy', blank=True, null=True)
+    network_cap=models.BooleanField(default=False)
+    round_limit=models.IntegerField(default=0)
 
     def __str__(self):
         '''
@@ -27,10 +30,9 @@ class Job(models.Model):
     '''
     '''
     confs=models.ForeignKey('workers.JobConfig')
-    seed=models.URLField(max_length=500)
+    seed=models.URLField(max_length=500, null=True, blank=True)
     status=models.CharField(max_length=50, choices=_status)
     results_count=models.IntegerField(default=0)
-    round_limit=models.IntegerField(default=0)
     created_at=models.DateTimeField(auto_now_add=True)
     last_modified=models.DateTimeField(auto_now=True)
     name=models.CharField(max_length=150, unique=True)

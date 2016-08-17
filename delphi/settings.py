@@ -42,6 +42,7 @@ INSTALLED_APPS = (
     'grabbers',
     'urlocators',
     'information',
+    #'proxy',
 
     'celery',
 )

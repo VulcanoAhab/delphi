@@ -6,7 +6,7 @@ class TaskAdmin(admin.ModelAdmin):
     '''
     '''
     list_display=('target_url', 'status')
-    list_filter=('status',)
+    list_filter=('status', 'job__name')
 
 admin.site.register(Job)
 admin.site.register(JobConfig)

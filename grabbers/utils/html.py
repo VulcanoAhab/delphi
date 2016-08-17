@@ -30,8 +30,8 @@ class Grabis:
         datum=[]
         for ats in attrs:
             if ats == 'text_content':
-                content=htmlElement.text.strip()
-                if not content:
+                content=htmlElement.text
+                if not content or not content.strip():
                     content=htmlElement.text_content()
                 datum.append(content)
             elif ats == 'generic_link':
@@ -59,15 +59,15 @@ class Grabis:
         '''
         '''
         #wait for element
-        try:
-            waitis=getattr(browser, 'wait_for_element')
-            waitis(selector, eltype=eltype)
-        except AttributeError:
-            #it's a lean request
-            pass
-        except Exception as e:
-            print('[-] Fail in wait for element', e)
-            return None
+        #try:
+        #    waitis=getattr(browser, 'wait_for_element')
+        #    waitis(selector, eltype=eltype)
+        #except AttributeError:
+        #    #it's a lean request
+        #    pass
+        #except Exception as e:
+        #    print('[-] Fail in wait for element', e)
+        #    return None
         source=browser.get_page_source()
         return html.fromstring(source)
 
@@ -107,13 +107,21 @@ class Grabis:
         '''
         '''
         fn=getattr(self._page_object, self._eltype)
-        self.data=fn(self._selector)
-
+        try:
+            self.data=fn(self._selector)
+        except Exception as e:
+            print('[+] Fail to find element', self._selector)
+            return 2
+    
     def action(self, action_type, browser, element_index,
                                 post_action=None, job=None):
         '''
         '''
-        els=browser.browser.find_elements_by_xpath(self._selector) #shoulb be in browser api
+        try:
+            els=browser.browser.find_elements_by_xpath(self._selector) #shoulb be in browser api
+        except Exception as e:
+            print('[+] Fail to find element', self._selector)
+            return 2
         if element_index >=0:
             elslen=len(els)
             if element_index > elslen-1:

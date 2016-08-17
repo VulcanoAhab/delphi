@@ -7,6 +7,8 @@ class PageAdmin(admin.ModelAdmin):
     '''
     list_display=['field_name', 'page_url', 'data']
     list_filter=['field_name','page__job']
+    
+    readonly_fields=['page', 'field_name', 'field_value', 'control_key']
 
     def page_url(self, obj):
         '''

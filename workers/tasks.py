@@ -40,19 +40,24 @@ def task_run(task_id):
     sequence=job.confs.sequence.indexed_grabbers.all().order_by('sequence_index')
 
     #build driver
-    wd=getattr(browsers, job.confs.driver.type)()
-    wd.load_confs(job.confs)
-    wd.build_driver()
+    try:
+        
+        wd=getattr(browsers, job.confs.driver.type)()
+        wd.load_confs(job.confs)
+        wd.build_driver()
 
-    print('[+] Starting GET request [{}]'.format(url))
-    wd.get(url)
+        print('[+] Starting GET request [{}]'.format(url))
+        wd.get(url)
 
-    #process get
-    ProcessSequence.set_job(job)
-    ProcessSequence.set_browser(wd)
-    ProcessSequence.set_sequence(sequence)
-    ProcessSequence.mapping(mapper)
-    ProcessSequence.run()
+        #process get
+        ProcessSequence.set_job(job)
+        ProcessSequence.set_browser(wd)
+        ProcessSequence.set_sequence(sequence)
+        ProcessSequence.mapping(mapper)
+        ProcessSequence.run()
+    except Exception as e:
+        print('[-] Exception on task level', e)
+        pass
 
     wd.close()
     time_used=time.time()-init_time

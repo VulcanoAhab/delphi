@@ -1,5 +1,7 @@
 import tempfile
 import requests
+import os
+import signal
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
@@ -67,6 +69,8 @@ class BaseSeleniumBrowser:
         self._driver=webdriver
         self.remote_server=remote_server
         self.host=''
+        self.pid=None
+        self.browser=None
 
     def set_host(self, host):
         '''
@@ -82,6 +86,9 @@ class BaseSeleniumBrowser:
             self.browser=getattr(self._driver, self._driver_name)()
         if self._driver_name == 'PhantomJS':
             self.browser.set_window_size(1124, 850)
+            self.pid=self.browser.service.process.pid
+        #wait some time for elements
+        self.browser.implicitly_wait(3)
 
     def set_cookies(self, **cookies):
         '''
@@ -118,6 +125,8 @@ class BaseSeleniumBrowser:
         '''
         '''
         if not self.browser:return
+        if self._driver_name == 'PhantomJS': 
+            self.browser.service.process.send_signal(signal.SIGTERM)
         self.browser.quit()
 
     @property
@@ -126,7 +135,7 @@ class BaseSeleniumBrowser:
         '''
         return self.browser.current_url
 
-    def wait_for_element(self, target_element, eltype, timeout=5):
+    def wait_for_element(self, target_element, eltype, timeout=3):
         '''
         wait for html element to load
         for now, only working with xpath pattern
@@ -135,7 +144,11 @@ class BaseSeleniumBrowser:
         eltypeDict={'xpath':By.XPATH,}
         target=(eltypeDict[eltype], target_element)
         element_present = EC.presence_of_element_located(target)
-        WebDriverWait(self.browser, timeout).until(element_present)
+        try:
+            WebDriverWait(self.browser, timeout).until(element_present)
+        except Exeption as e:
+            print('Did not find the element', target_element)
+            return 1
 
     def switch_to_frame(self, **kwargs):
         '''

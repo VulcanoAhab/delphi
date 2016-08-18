@@ -78,7 +78,7 @@ class Target(models.Model):
     '''
     '''
     field_name=models.CharField(max_length=250)
-    field_selector=models.CharField(max_length=500)
+    field_selector=models.CharField(max_length=750)
     selector_type=models.CharField(max_length=10, choices=_SPATTERN, default='xpath')
 
     def __str__(self):

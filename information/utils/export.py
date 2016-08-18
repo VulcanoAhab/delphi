@@ -41,7 +41,10 @@ class Save:
     def as_json(cls, file_name):
         '''
         '''
-        pages_json=[{r.field_name:r.field_value} for page_data in cls._queries for r in page_data]
+        pages_json=[]
+        for page_data in cls._queries:
+                page={r.field_name:r.field_value for r in page_data}
+                pages_json.append(page)
         file_path=os.path.join(settings.DATA_ROOT,file_name)
         fd=open(file_path, 'w')
         json.dump(pages_json, fd)

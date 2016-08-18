@@ -10,6 +10,7 @@ settings_prod.py
 media
 static
 specials
+data
 
 # C extensions
 *.so

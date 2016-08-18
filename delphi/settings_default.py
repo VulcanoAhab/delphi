@@ -29,4 +29,6 @@ CELERY_RESULT_SERIALIZER = 'json'
 BROKER_URL = 'amqp://guest:guest@127.0.0.1:5672//'
 
 
+MEDIA_ROOT=os.path.join(BASE_DIR, 'media')
+DATA_ROOT=os.path.join(BASE_DIR, 'data')
 

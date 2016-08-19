@@ -19,6 +19,7 @@ class PageData(models.Model):
     page=models.ForeignKey('urlocators.Page')
     created_at=models.DateTimeField(auto_now_add=True)
     modified_at=models.DateTimeField(auto_now=True)
+    element_index=models.IntegerField(default=0)
 
     class Meta:
         '''

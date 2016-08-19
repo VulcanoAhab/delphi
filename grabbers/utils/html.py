@@ -51,7 +51,7 @@ class Grabis:
         data_container=[dict() for _ in elements]
         for n,value in enumerate(elements):
             data=Grabis._exData(value, attrs)
-            data_container[n].update({field:data})
+            data_container[n].update({field:data, 'index': n})
         return data_container
 
     @staticmethod
@@ -112,7 +112,7 @@ class Grabis:
         except Exception as e:
             print('[+] Fail to find element', self._selector)
             return 2
-    
+
     def action(self, action_type, browser, element_index,
                                 post_action=None, job=None):
         '''
@@ -255,6 +255,7 @@ class Pythoness:
             #close temp file
 
         for dict_item in self._data['page_data']:
+            element_index = dict_item.pop('index')
             for field_name, values in dict_item.items():
                 for value in values:
                     if not value:continue
@@ -264,6 +265,7 @@ class Pythoness:
                     pd=PageData()
                     pd.field_name=field_name
                     pd.field_value=value
+                    pd.element_index = element_index
                     pd.page=page
                     pd.save()
 

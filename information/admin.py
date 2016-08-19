@@ -5,10 +5,12 @@ from information.models import PageData
 class PageAdmin(admin.ModelAdmin):
     '''
     '''
-    list_display=['field_name', 'page_url', 'data']
+    list_display=['field_name', 'page_url', 'data', 'element_index']
     list_filter=['field_name','page__job']
-    
-    readonly_fields=['page', 'field_name', 'field_value', 'control_key']
+
+    readonly_fields=['page', 'field_name', 'field_value', 'control_key', 'element_index']
+
+    sort=['element_index']
 
     def page_url(self, obj):
         '''

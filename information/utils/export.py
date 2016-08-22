@@ -183,7 +183,7 @@ class JsonPage:
             next_dicts=[]
             for next_data in next_datum:
                 next_url=next_data.field_value
-                next_page=Page.objects.get(addr.url__contains=next_url)
+                next_page=Page.objects.get(addr__url__contains=next_url)
                 next_page_data=PageData.objects.filter(page=next_page)
                 next_chain={'seed':next_url,
                            'page_data':next_page_data,

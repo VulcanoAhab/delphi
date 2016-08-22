@@ -89,6 +89,7 @@ class BaseSeleniumBrowser:
             self.pid=self.browser.service.process.pid
         #wait some time for elements
         self.browser.implicitly_wait(3)
+        self.browser.set_page_load_timeout(30)
 
     def set_cookies(self, **cookies):
         '''
@@ -125,7 +126,7 @@ class BaseSeleniumBrowser:
         '''
         '''
         if not self.browser:return
-        if self._driver_name == 'PhantomJS': 
+        if self._driver_name == 'PhantomJS':
             self.browser.service.process.send_signal(signal.SIGTERM)
         self.browser.quit()
 

@@ -34,7 +34,7 @@ class Pull:
         return pages_data
 
     @classmethod
-    def data_per_urls(cls, seed_urls, chain_fields):
+    def data_per_urls(cls, seed_urls, chain_fields, data_fields):
         '''
         params
         ------
@@ -52,6 +52,7 @@ class Pull:
                 'page_data':page_data,
                 'index':0,
                 'chain_fields':chain_fields,
+                'data_fields':data_fields,
                     }
             pages_data.append(page_dict)
         return pages_data
@@ -139,37 +140,43 @@ class JsonPage:
     def _urls_chain(cls, page_dict_list, container=[]):
         '''
         '''
+
         pages_list=[]
         for page_dict in page_dict_list:
             url=page_dict['seed']
             page_data=page_dict['page_data']
             index=page_dict['index']
             chain_fields=page_dict['chain_fields']
+            data_fields=page_dict['data_fields']
             chain_size=len(chain_fields)
             next_index=index+1
             #if it is first iteraction
             if not container:
                 page_chain={
-                    'url':url,
+                    'seed':url,
                     'index':index,
                     'nodes':[],
                     'data':[],
                     'chain_fields':chain_fields,
+                    'data_fields':data_fields,
                         }
                 container=page_chain['nodes']
                 #add page chain dict to final chain result list
                 pages_list.append(page_chain)
             #if is final chain field -> target data field
             if chain_size >= next_index:
-                final_field=chain_fields[index]
-                final_data=page_data.filter(field_name=final_field)
+                data_fields=page_dict['data_fields']
+                final_fields=data_fields
+                final_data=page_data.filter(field_name__in=final_fields)
                 final_data=[{p.field_name:p.field_value}
                             for p in final_data]
                 final_chain={
-                    'url':url,
+                    'seed':url,
                     'index':next_index,
                     'nodes':[],
                     'data':final_data,
+                    'data_fields':data_fields,
+                    'chain_fields':chain_fields,
                         }
                 container.append(final_chain)
                 continue
@@ -181,14 +188,15 @@ class JsonPage:
                 next_url=next_data.field_value
                 next_page=Page.objects.get(addr=next_url)
                 page_data=PageData.objects.filter(page=next_page)
-                next_dict={'seed':next_url,
+                next_chain={'seed':next_url,
                            'page_data':page_data,
                            'index':next_index,
                            'chain_fields':chain_fields,
+                           'data_fields':data_fields,
                            'nodes':[]}
                 container.append(next_dict)
                 next_container=next_dict['nodes']
-                cls._build_chain([next_dict], next_container)
+                cls._build_chain([next_chain], next_container)
         return pages_list
 
 class Export:
@@ -208,13 +216,13 @@ class Export:
 
 
     @classmethod
-    def urlsChain_to_json(cls, job_id, file_name, urls, chain_fields):
+    def urlsChain_to_json(cls, job_id, file_name, urls, chain_fields, data_fields):
         '''
         '''
         if not file_name.endswith('.json'):
             file_name='.'.join([file_name, 'json'])
         job=Job.objects.get(id=job_id)
-        data=Pull.data_per_urls(urls, chain_fields)
+        data=Pull.data_per_urls(urls, chain_fields, data_fields)
         JsonPage.set_job_name(job.name)
         JsonPage.set_data(data)
         #testing

@@ -190,7 +190,7 @@ class JsonPage:
                            'index':next_index,
                            'chain_fields':chain_fields,
                            'data_fields':data_fields,
-                           'nodes':[]
+                           'nodes':[],
                            'data':[]}
                 if next_index >= chain_size:
                     next_container=next_chain['data']

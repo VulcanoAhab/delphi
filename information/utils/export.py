@@ -1,21 +1,30 @@
-from information.models import PageData
-from urlocators.models import Page
 from django.core import serializers
 from django.conf import settings
 import os
 import itertools
 import json
 
+from information.models import PageData
+from urlocators.models import Page
+from workers.models import Job
+
+
 class Pull:
     '''
     '''
 
     @classmethod
-    def data_per_job(cls, job_id, fields_name=[]):
+    def set_job_id(cls, job_id):
+        '''
+        '''
+        cls._job_id=job_id
+
+    @classmethod
+    def data_per_job(cls, fields_name=[]):
         '''
         '''
         pages_data=[]
-        pages=Page.objects.filter(job=job_id)
+        pages=Page.objects.filter(job=cls._job_id)
         for page in pages:
             page_data=PageData.objects.filter(page=page)
             if fields_name:
@@ -24,41 +33,192 @@ class Pull:
             pages_data.append(page_data)
         return pages_data
 
+    @classmethod
+    def data_per_urls(cls, seed_urls, chain_fields):
+        '''
+        params
+        ------
+        seed_urls: the query roots urls
+        urls_chain: target_fields name [that hold urls chain]
+        values_field_name:fields name from the target values
 
-class Save:
+        '''
+        pages_data=[]
+        for seed in seed_urls:
+            page=Page.objects.get(addr__url=seed)
+            page_data=PageData.objects.filter(page=page)
+            page_dict={
+                'seed':seed,
+                'page_data':page_data,
+                'index':0,
+                'chain_fields':chain_fields,
+                    }
+            pages_data.append(page_dict)
+        return pages_data
+
+
+class JsonPage:
     '''
     '''
-    
-    _queries=[]
+
+    _base=[]
+    _file_name=''
+    _pages_json=[]
+    _job_name=[]
+    _to='file' #or redis
 
     @classmethod
-    def set_query_list(cls, query_list):
+    def set_export_format(cls, to):
         '''
         '''
-        cls._queries=query_list
-        
+        cls._to=to
+
     @classmethod
-    def as_json(cls, file_name):
+    def _file(cls):
         '''
         '''
-        pages_json=[]
-        for page_data in cls._queries:
-                page={r.field_name:r.field_value for r in page_data}
-                pages_json.append(page)
-        file_path=os.path.join(settings.DATA_ROOT,file_name)
+        job_path=os.path.join(settings.DATA_ROOT, cls._job_name)
+        if not os.path.exists(job_path):os.makedirs(job_path)
+        file_path=os.path.join(job_path, cls._file_name)
         fd=open(file_path, 'w')
-        json.dump(pages_json, fd)
+        json.dump(cls._pages_json, fd)
         fd.close()
-        print('[=[<o>]=] Done saving file: {} [=[<o>]=]'.format(file_name))
+
+    @classmethod
+    def _export(cls):
+        '''
+        '''
+        if cls._to == 'file':
+            cls._file()
+            print('[=[<o>]=] Done saving file: {} [=[<o>]=]'.format(cls._file_name))
+        elif cls._to == 'api':
+            raise NotImplemented('[-] EXPORT FORMAT TO BE IMPLEMENTED')
+        else:
+            raise TypeError('[-] Unkown export format')
+
+    @classmethod
+    def set_data(cls, base_data):
+        '''
+        '''
+        cls._base=base_data
+
+    @classmethod
+    def set_job_name(cls, job_name):
+        '''
+        '''
+        cls._job_name=job_name
+
+    @classmethod
+    def by_job(cls, file_name, fields_name=[]):
+        '''
+        '''
+        cls._pages_json=[]
+        cls._file_name=file_name
+        for page_data in cls._base:
+            if target_fields_name:
+                page={r.fields_name:r.field_value
+                      for r in page_data
+                      if r.fild_name in fields_name}
+            else:
+                 page={r.field_name:r.field_value
+                       for r in page_data}
+            cls._pages_json.append(page)
+        cls._export()
+
+
+    @classmethod
+    def by_urls_chain(cls, file_name):
+        '''
+        '''
+        cls._file_name=file_name
+        cls._pages_json=cls._urls_chain(cls._base)
+        cls._export()
+
+
+    @classmethod
+    def _urls_chain(cls, page_dict_list, container=[]):
+        '''
+        '''
+        pages_list=[]
+        for page_dict in page_dict_list:
+            url=page_dict['seed']
+            page_data=page_dict['page_data']
+            index=page_dict['index']
+            chain_fields=page_dict['chain_fields']
+            chain_size=len(chain_fields)
+            next_index=index+1
+            #if it is first iteraction
+            if not container:
+                page_chain={
+                    'url':url,
+                    'index':index,
+                    'nodes':[],
+                    'data':[],
+                    'chain_fields':chain_fields,
+                        }
+                container=page_chain['nodes']
+                #add page chain dict to final chain result list
+                pages_list.append(page_chain)
+            #if is final chain field -> target data field
+            if chain_size >= next_index:
+                final_field=chain_fields[index]
+                final_data=page_data.filter(field_name=final_field)
+                final_data=[{p.field_name:p.field_value}
+                            for p in final_data]
+                final_chain={
+                    'url':url,
+                    'index':next_index,
+                    'nodes':[],
+                    'data':final_data,
+                        }
+                container.append(final_chain)
+                continue
+            #building chain
+            chain_field=chain_fields[index]
+            next_datum=page_data.filter(field_name=chain_field)
+            next_dicts=[]
+            for next_data in next_datum:
+                next_url=next_data.field_value
+                next_page=Page.objects.get(addr=next_url)
+                page_data=PageData.objects.filter(page=next_page)
+                next_dict={'seed':next_url,
+                           'page_data':page_data,
+                           'index':next_index,
+                           'chain_fields':chain_fields,
+                           'nodes':[]}
+                container.append(next_dict)
+                next_container=next_dict['nodes']
+                cls._build_chain([next_dict], next_container)
+        return pages_list
 
 class Export:
     '''
     '''
-    
+
     @classmethod
-    def job_to_json(cls, job_id, file_name):
+    def job_to_json(cls, job_id, file_name, fields_name=[]):
         '''
         '''
-        data=Pull.data_per_job(job_id)
-        Save.set_query_list(data)
-        Save.as_json(file_name)
+        job=Job.objects.get(id=job_id)
+        Pull.set_job_id=job_id
+        data=Pull.data_per_job(fields_name)
+        JsonPage.set_job_name(job.name)
+        JsonPage.set_data(data)
+        JsonPage.by_job(file_name)
+
+
+    @classmethod
+    def urlsChain_to_json(cls, job_id, file_name, urls, chain_fields):
+        '''
+        '''
+        if not file_name.endswith('.json'):
+            file_name='.'.join([file_name, 'json'])
+        job=Job.objects.get(id=job_id)
+        data=Pull.data_per_urls(urls, chain_fields)
+        JsonPage.set_job_name(job.name)
+        JsonPage.set_data(data)
+        #testing
+        JsonPage.by_urls_chain(file_name)
+
+
+

@@ -144,10 +144,10 @@ class JsonPage:
         pages_list=[]
         for page_dict in page_dict_list:
             url=page_dict['seed']
-            page_data=page_dict['page_data']
+            page_data=page_dict.pop('page_data')
             index=page_dict['index']
-            chain_fields=page_dict['chain_fields']
-            data_fields=page_dict['data_fields']
+            chain_fields=page_dict.pop('chain_fields')
+            data_fields=page_dict.pop('data_fields')
             chain_size=len(chain_fields)
             next_index=index+1
             #if it is first iteraction
@@ -165,7 +165,7 @@ class JsonPage:
                 #add page chain dict to final chain result list
                 pages_list.append(page_chain)
             #if is final chain field -> target data field
-            if chain_size >= index:
+            if index >= chain_size:
                 data_fields=page_dict['data_fields']
                 final_data=page_data.filter(field_name__in=data_fields)
                 final_data=[{p.field_name:p.field_value}
@@ -173,10 +173,7 @@ class JsonPage:
                 final_chain={
                     'seed':url,
                     'index':next_index,
-                    'nodes':[],
-                    'data':final_data,
-                    'data_fields':data_fields,
-                    'chain_fields':chain_fields,
+                    'values':final_data,
                         }
                 container.append(final_chain)
                 continue
@@ -186,17 +183,21 @@ class JsonPage:
             next_dicts=[]
             for next_data in next_datum:
                 next_url=next_data.field_value
-                next_page=Page.objects.get(addr=next_url)
-                page_data=PageData.objects.filter(page=next_page)
+                next_page=Page.objects.get(addr.url__contains=next_url)
+                next_page_data=PageData.objects.filter(page=next_page)
                 next_chain={'seed':next_url,
-                           'page_data':page_data,
+                           'page_data':next_page_data,
                            'index':next_index,
                            'chain_fields':chain_fields,
                            'data_fields':data_fields,
-                           'nodes':[]}
-                container.append(next_dict)
-                next_container=next_dict['nodes']
-                cls._build_chain([next_chain], next_container)
+                           'nodes':[]
+                           'data':[]}
+                if next_index >= chain_size:
+                    next_container=next_chain['data']
+                else:
+                    next_container=next_chain['nodes']
+                container.append(next_chain)
+                cls._urls_chain([next_chain], next_container)
         return pages_list
 
 class Export:

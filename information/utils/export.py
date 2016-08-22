@@ -165,10 +165,10 @@ class JsonPage:
                 #add page chain dict to final chain result list
                 pages_list.append(page_chain)
             #if is final chain field -> target data field
-            if chain_size >= next_index:
+            if chain_size >= index:
+                next_page=page_data.filter(field_name=chain_field)
                 data_fields=page_dict['data_fields']
-                final_fields=data_fields
-                final_data=page_data.filter(field_name__in=final_fields)
+                final_data=page_data.filter(field_name__in=data_fields)
                 final_data=[{p.field_name:p.field_value}
                             for p in final_data]
                 final_chain={

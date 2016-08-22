@@ -152,6 +152,7 @@ class JsonPage:
             next_index=index+1
             #if it is first iteraction
             if not container:
+                #this guy will a class soon - for now repetition
                 page_chain={
                     'seed':url,
                     'index':index,

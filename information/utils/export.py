@@ -137,7 +137,7 @@ class JsonPage:
 
 
     @classmethod
-    def _urls_chain(cls, page_dict_list, container=[]):
+    def _urls_chain(cls, page_dict_list, container=None):
         '''
         '''
 
@@ -151,7 +151,7 @@ class JsonPage:
             chain_size=len(chain_fields)
             next_index=index+1
             #if it is first iteraction
-            if not container:
+            if container is None:
                 #this guy will a class soon - for now repetition
                 page_chain={
                     'seed':url,

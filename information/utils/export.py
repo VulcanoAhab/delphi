@@ -137,12 +137,13 @@ class JsonPage:
 
 
     @classmethod
-    def _urls_chain(cls, page_dict_list, container=None):
+    def _urls_chain(cls, page_dict_list, chain_container=None):
         '''
         '''
 
         pages_list=[]
         for page_dict in page_dict_list:
+
             url=page_dict['seed']
             page_data=page_dict.pop('page_data')
             index=page_dict['index']
@@ -150,8 +151,9 @@ class JsonPage:
             data_fields=page_dict.pop('data_fields')
             chain_size=len(chain_fields)
             next_index=index+1
+
             #if it is first iteraction
-            if container is None:
+            if chain_container is None:
                 #this guy will a class soon - for now repetition
                 page_chain={
                     'seed':url,
@@ -164,6 +166,9 @@ class JsonPage:
                 container=page_chain['nodes']
                 #add page chain dict to final chain result list
                 pages_list.append(page_chain)
+            else:
+                container=chain_container
+
             #if is final chain field -> target data field
             if index >= chain_size:
                 final_data=page_data.filter(field_name__in=data_fields)
@@ -176,6 +181,7 @@ class JsonPage:
                         }
                 container.append(final_chain)
                 continue
+
             #building chain
             chain_field=chain_fields[index]
             next_datum=page_data.filter(field_name=chain_field)
@@ -197,6 +203,7 @@ class JsonPage:
                     next_container=next_chain['nodes']
                 container.append(next_chain)
                 cls._urls_chain([next_chain], next_container)
+
         return pages_list
 
 class Export:

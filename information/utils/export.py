@@ -30,7 +30,8 @@ class Pull:
             if fields_name:
                 page_data=page_data.filter(field_name__in=fields_name)
             if not page_data or page_data.count()==0:continue
-            pages_data.append(page_data)
+            pages_data.append({'page_data':page_data, 
+                               'page_url':page.addr.url})
         return pages_data
 
     @classmethod
@@ -82,7 +83,7 @@ class JsonPage:
         if not os.path.exists(job_path):os.makedirs(job_path)
         file_path=os.path.join(job_path, cls._file_name)
         fd=open(file_path, 'w')
-        json.dump(cls._pages_json, fd)
+        json.dump(cls._pages_json, fd, indent=3)
         fd.close()
 
     @classmethod
@@ -115,14 +116,17 @@ class JsonPage:
         '''
         cls._pages_json=[]
         cls._file_name=file_name
-        for page_data in cls._base:
-            if target_fields_name:
+        for page_dict in cls._base:
+            page_data=page_dict['page_data']
+            page_url=page_dict['page_url']
+            if fields_name:
                 page={r.fields_name:r.field_value
                       for r in page_data
                       if r.fild_name in fields_name}
             else:
                  page={r.field_name:r.field_value
                        for r in page_data}
+            page.update({'page_url':page_url})
             cls._pages_json.append(page)
         cls._export()
 
@@ -215,7 +219,7 @@ class Export:
         '''
         '''
         job=Job.objects.get(id=job_id)
-        Pull.set_job_id=job_id
+        Pull.set_job_id(job_id)
         data=Pull.data_per_job(fields_name)
         JsonPage.set_job_name(job.name)
         JsonPage.set_data(data)

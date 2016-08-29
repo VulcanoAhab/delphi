@@ -13,7 +13,7 @@ from information.models import PageData, make_control_key
 from urlocators.models import Page, Locator, make_url_id
 from workers.models import Job
 from grabbers.models import Target, ElementAction, PostElementAction, Extractor, PageAction
-
+from workers.utils.tasksProducer import TaskFromUrls
 
 
 
@@ -55,19 +55,9 @@ class Grabis:
         return data_container
 
     @staticmethod
-    def load_page(browser, selector, eltype='xpath'):
+    def load_page(browser):
         '''
         '''
-        #wait for element
-        #try:
-        #    waitis=getattr(browser, 'wait_for_element')
-        #    waitis(selector, eltype=eltype)
-        #except AttributeError:
-        #    #it's a lean request
-        #    pass
-        #except Exception as e:
-        #    print('[-] Fail in wait for element', e)
-        #    return None
         source=browser.get_page_source()
         return html.fromstring(source)
 
@@ -97,10 +87,10 @@ class Grabis:
             raise Exception('[-] Fail to load page_object')
         self._page_object=page_object
 
-    def get_data(self, field_name, attrs={}, pure_elements=False):
+    def get_data(self, field_name, attrs=[], as_elements=False):
         '''
         '''
-        if pure_elements: return self.data
+        if as_elements: return self.data
         return Grabis.load_data_from_selected(self.data, field_name, attrs)
 
     def grab(self):
@@ -145,49 +135,56 @@ class Grabis:
 class Pythoness:
     '''
     '''
-    _job=None
-
-    @classmethod
-    def set_job(cls, job):
-        '''
-        '''
-        cls._job=job
 
     def __init__(self):
         '''
         '''
         self._conf={}
+        self._job=None
         self._data={
             'page_source':[],
             'page_data':[],
                     }
+
+    def set_job(self, job):
+        '''
+        '''
+        self._job=job
+
     def set_grabber(self, grabber):
         '''
         '''
         self._conf=GrabberConf.toDict(grabber)
         print('[+] Setting Grabber Configuration')
 
-    def map_sequence_targets(self, mapper, browser):
+    def map_targets(self, mapper, browser):
         '''
         '''
-        mapper_dict=MapperConf.toDict(mapper)
-        field_name=mapper_dict['name']
-        selector=mapper_dict['selector']
-        page_object=Grabis.load_page(browser, selector)
+        #set vars
+        print('Processing GET in Mapper..')
+        field_name=mapper.field_name
+        selector=mapper.field_selector
+        task_config=mapper.task_config
+        page_object=Grabis.load_page(browser)
+        #mine target links
         try:
             gb=Grabis()
             gb.set_selector(selector)
             gb.set_page_object(page_object)
             gb.grab()
-            data=gb.get_data(field_name, pure_elements=True)
-            if 'page_action' in mapper_dict:
-                page_action=mapper_dict['page_action']
-                print('[+] Mapper start page action [{0}]'.format(page_action))
-                getattr(browser, page_action)(job=self._job)
-            return data
+            data=gb.get_data(field_name, ['generic_link',])
+            print('Processed data', data)
         except Exception as e:
-            print('[-] Fail to build map', e)
-            return []
+            print('[-] Fail to extract link in mapper', e)
+            return
+        #create mapper tasks
+        urls=[d for e in data for d in e[field_name] if d]
+        TaskFromUrls._job=self._job
+        TaskFromUrls._config=task_config
+        TaskFromUrls.set_urls(urls)
+        TaskFromUrls.build_tasks()
+        print('[+] Done creating tasks')
+
 
     def session(self, browser, element_index=-1):
         '''
@@ -196,7 +193,7 @@ class Pythoness:
         if 'target' in self._conf:
             selector=self._conf['target']['selector']
             print('[+] Start mining with selector [{0}]'.format(selector))
-            page_object=Grabis.load_page(browser,selector)
+            page_object=Grabis.load_page(browser)
             try:
                 gb=Grabis()
                 gb.set_selector(selector)

@@ -49,5 +49,11 @@ class MapperConf:
         '''
         field_name=mapper.field_name
         field_selector=mapper.field_selector
-        return {'name':field_name, 'selector':field_selector}
+        task_config_name=mapper.task_config.name
+        task_dict={
+            'name':field_name,
+            'selector':field_selector,
+            'task_config_name':task_config_name,
+               }
+        return task_dict
 

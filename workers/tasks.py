@@ -29,22 +29,33 @@ def task_run(task_id):
     #must have
     task=Task.objects.get(pk=task_id)
     job=task.job
-    if not job.confs.sequence:
-        print('[+] Sequence is required')
+    if not task.config.sequence and not task.config.mapper:
+        print('[+] Sequence or mapper must be set')
         return
     #loading vars
     url=task.target_url
     round_number=task.round_number
     control_key=build_control_key(url, job.id)
-    mapper=job.confs.mapper
-    sequence=job.confs.sequence.indexed_grabbers.all().order_by('sequence_index')
+    mapper=task.config.mapper
+    sequence=task.config.sequence
+
+    #test proxy
+    proxy=task.config.proxy
+    if proxy and not proxy.running:
+        print('[+] Proxy is set but not running...')
+        exit(0)
+
 
     #build driver
     try:
-        
-        wd=getattr(browsers, job.confs.driver.type)()
-        wd.load_confs(job.confs)
+
+        wd=getattr(browsers, task.config.driver.type)()
+        wd.load_confs(task.config)
         wd.build_driver()
+
+        if proxy:
+            #prepare for get
+            pass
 
         print('[+] Starting GET request [{}]'.format(url))
         wd.get(url)
@@ -52,19 +63,25 @@ def task_run(task_id):
         #process get
         ProcessSequence.set_job(job)
         ProcessSequence.set_browser(wd)
-        ProcessSequence.set_sequence(sequence)
-        ProcessSequence.mapping(mapper)
+        if mapper:
+            ProcessSequence.mapping(mapper)
+        if sequence:
+            indexed_seq=sequence.indexed_grabbers.all(
+                           ).order_by('sequence_index')
+            ProcessSequence.set_sequence(indexed_seq)
         ProcessSequence.run()
+        #pass proxy to data collection ----
+        status='done'
     except Exception as e:
         print('[-] Exception on task level', e)
-        pass
+        status='fail'
 
     wd.close()
     time_used=time.time()-init_time
     print('[+] Process took: [{0:.2f}] seconds'.format(time_used))
 
     #status task done
-    task.status='done'
+    task.status=status
     task.save()
 
 
@@ -76,7 +93,8 @@ def task_manager(job_id, job_name):
     '''
     #set vars
     ask_til_three=0
-
+    #wait for task to be saved - just in case
+    time.sleep(1)
     #task loop -- need to improve job control soon
     #need to be more intelligent -- maybe as periodic
     while True:
@@ -85,7 +103,15 @@ def task_manager(job_id, job_name):
 
         if not task:
             ask_til_three+=1
-            if ask_til_three > 3:break
+            if ask_til_three > 3:
+                #test for running tasks
+                while True:
+                    task_running = Task.objects.filter(job__id=job_id, status='running')
+                    running_count=task_running.count()
+                    if not running_count():break
+                    print('[+] Waiting runnning tasks: [{}]'.format(running_count()))
+                    time.spleep(5)
+                break
             print('[-] No task for job [{0}]'.format(job_name))
             time.sleep(30*ask_til_three)
             continue
@@ -107,27 +133,9 @@ def task_manager(job_id, job_name):
 def job_starter(job_id=1):
     '''
     '''
-    print('[+] Starting job')
     job=Job.objects.get(pk=job_id)
+    print('[+] Starting job [{}]'.format(job.name))
     job.status='running'
     job.save()
-
-    #test proxy
-    proxy=job.confs.proxy
-    if proxy and not proxy.running:
-        print('[+] Proxy is set but not running...')
-        exit(0)
-
-    if job.seed:
-        #create first task
-        task=Task()
-        task.target_url=job.seed
-        task.status='created'
-        task.round_number=0
-        task.job=job
-        task.save()
-        time.sleep(1)
     task_manager.delay(job_id, job.name)
-    #here will soon implement the new jobs confs for tasks
-    #for example create new jobs from element(URL) XYZ
 

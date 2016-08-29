@@ -7,15 +7,16 @@ _status=[
     ('created', 'created'), #just created job
     ('done','done'),
     ('running','running'),
+    ('fail','fail'),
     ('to_approve','to_approve'),
         ]
 
-class JobConfig(models.Model):
+class TaskConfig(models.Model):
     '''
     '''
-    name=models.CharField(max_length=150)
+    name=models.CharField(max_length=150, unique=True)
     driver=models.ForeignKey('drivers.Driver')
-    sequence=models.ForeignKey('grabbers.Sequence')
+    sequence=models.ForeignKey('grabbers.Sequence', blank=True, null=True)
     mapper=models.ForeignKey('grabbers.Mapper', blank=True, null=True)
     proxy=models.ForeignKey('proxy.Proxy', blank=True, null=True)
     network_cap=models.BooleanField(default=False)
@@ -29,8 +30,8 @@ class JobConfig(models.Model):
 class Job(models.Model):
     '''
     '''
-    confs=models.ForeignKey('workers.JobConfig')
-    seed=models.URLField(max_length=500, null=True, blank=True)
+    #confs=models.ForeignKey('workers.JobConfig')
+    #seed=models.URLField(max_length=500, null=True, blank=True)
     status=models.CharField(max_length=50, choices=_status)
     results_count=models.IntegerField(default=0)
     created_at=models.DateTimeField(auto_now_add=True)
@@ -44,6 +45,7 @@ class Task(models.Model):
     '''
     '''
     target_url=models.URLField(max_length=750)
+    config=models.ForeignKey('workers.TaskConfig')
     status=models.CharField(max_length=50, choices=_status)
     type=models.CharField(max_length=150, default='request')
     round_number=models.IntegerField(default=0)

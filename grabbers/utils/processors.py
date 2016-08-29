@@ -35,18 +35,9 @@ class ProcessSequence:
         '''
         if not mapper:return
         ps=Pythoness()
-        mapped_elements=ps.map_sequence_targets(mapper, cls._browser)
-        mlen=len(mapped_elements)
-        print('[+] Mapped [{}] elements'.format(mlen))
-        if mlen < 1:
-            print('[+] Mapping lower than 1 has no purpose')
-            print(cls._browser.browser.page_source[:500])
-            print('[+] Mapped [{}] elements'.format(mlen))
-            return
-        cls._sequence_maps={
-            'size':mlen,
-            'attrs':[m.attrib for m in mapped_elements]
-                }
+        ps._job=cls._job
+        ps.map_targets(mapper, cls._browser)
+
 
     @classmethod
     def fire_sequence(cls, index=-1):
@@ -57,9 +48,6 @@ class ProcessSequence:
             ps=Pythoness()
             ps.set_job(cls._job)
             ps.set_grabber(indexed_grabber.grabber)
-            seqIndex=indexed_grabber.sequence_index
-            if seqIndex > 0:#only the first one after mapping
-                index=-1
             ps.session(cls._browser, element_index=index)
             ps.save_data(cls._browser)
 

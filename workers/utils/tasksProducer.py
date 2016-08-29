@@ -8,7 +8,7 @@ from workers.models import Task, Job
 from information.models import PageData
 
 #========================== / base classes \ ==========================
-# under construction -- still designing patterns 
+# under construction -- still designing patterns
 
 class UrlsOneVarPaging:
     '''
@@ -24,7 +24,7 @@ class UrlsOneVarPaging:
         '''
         '''
         cls._base_url=url
-        
+
     @classmethod
     def set_paging_param(cls, param_field):
         '''
@@ -33,7 +33,7 @@ class UrlsOneVarPaging:
         tps=[cls._target_param,]*3
         rex='{}\=\d+|{}\=|{}'.format(*tps)
         cls._target_rex=re.compile(rex, re.I)
-    
+
     @classmethod
     def set_paging_range(cls, start_value, max_value, step_size=1):
         '''
@@ -48,7 +48,7 @@ class UrlsOneVarPaging:
             new_value='='.join([cls._target_param, str(param_value)])
             new_url=cls._target_rex.sub(new_value, cls._base_url)
             cls._urls_list.append(new_url)
-    
+
     @classmethod
     def get_urls(cls):
         '''
@@ -68,7 +68,7 @@ class TaskFromResults:
         '''
         '''
         cls._target_job=job_id
-    
+
     @classmethod
     def pull_results(cls):
         '''
@@ -94,11 +94,18 @@ class TaskFromUrls:
     '''
 
     @classmethod
-    def set_job(cls, job_id):
+    def set_job(cls, job_pointer):
         '''
         '''
-        cls._job=Job.objects.get(id=job_id)
-    
+        if isinstance(job_pointer, Job):
+            cls._job=job_pointer
+        else:
+            try:
+                job_id=int(job_pointer)
+            except:
+                raise TypeError('[+] [{}] Unkown job pointer.'.format(cls.__class__.name))
+            cls._job=Job.objects.get(id=job_id)
+
     @classmethod
     def set_urls(cls, urls):
         '''
@@ -106,20 +113,30 @@ class TaskFromUrls:
         cls._urls=urls
 
     @classmethod
+    def set_config_name(cls, config_name):
+        '''
+        '''
+        cls._config_name=config_name
+        cls._config=TaskConfig.objects.get(name=config_name)
+
+    @classmethod
     def build_tasks(cls):
         '''
         '''
         for url in cls._urls:
-            task=Task(target_url=url, job=cls._job, status='created') #to be aproved
+            task=Task(  target_url=url,
+                        job=cls._job,
+                        status='created',# ? to be approved ?
+                        config=cls._config)
             task.save()
-            time.sleep(0.1)
+            time.sleep(0.01)
 
 
 #========================== / producer classes \ ==========================
 class OneVarPagingTasks:
     '''
     '''
-    
+
     _urls=[]
     _job_id=0
     _base_url=None
@@ -132,7 +149,7 @@ class OneVarPagingTasks:
         '''
         '''
         cls._job_id=job_id
-    
+
     @classmethod
     def _produce_urls(cls):
         '''
@@ -142,6 +159,13 @@ class OneVarPagingTasks:
         UrlsOneVarPaging.set_paging_range(cls._paging_range[0],cls._paging_range[1],cls._paging_step)
         UrlsOneVarPaging.build_urls()
         cls._urls=UrlsOneVarPaging.get_urls()
+
+    @classmethod
+    def set_config_name(cls, config_name):
+        '''
+        '''
+        cls._config_name=config_name
+
 
     @classmethod
     def produce_tasks(cls, base_url, paging_param, paging_range, paging_step):
@@ -156,6 +180,7 @@ class OneVarPagingTasks:
         print('[+] Done creating {} urls.'.format(len(cls._urls)))
         #produce tasks
         TaskFromUrls.set_job(cls._job_id)
+        TaskFromUrls.set_config_name(cls._config_name)
         TaskFromUrls.set_urls(cls._urls)
         TaskFromUrls.build_tasks()
         print('[+] Done creatinfg tasks from urls')
@@ -166,7 +191,7 @@ class ResultsTasks:
     '''
     _tasks_job=None
     _results_job=None
-    
+
     @staticmethod
     def tasks_by_field(field):
         '''
@@ -192,6 +217,12 @@ class ResultsTasks:
         cls._results_job=job_id
 
     @classmethod
+    def set_config_name(cls, config_name):
+        '''
+        '''
+        cls._config_name=config_name
+
+    @classmethod
     def produce_tasks(cls, producer_fn):
         '''
         '''
@@ -202,6 +233,7 @@ class ResultsTasks:
         print('[+] Done mining {} target urls'.format(len(task_urls)))
         TaskFromUrls.set_job(cls._tasks_job)
         TaskFromUrls.set_urls(task_urls)
+        TaskFromUrls.set_config_name(config_name)
         TaskFromUrls.build_tasks()
         print('[+] Done building tasks...')
 

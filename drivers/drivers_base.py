@@ -88,7 +88,7 @@ class BaseSeleniumBrowser:
             self.browser.set_window_size(1124, 850)
             self.pid=self.browser.service.process.pid
         #wait some time for elements
-        self.browser.implicitly_wait(3)
+        self.browser.implicitly_wait(5)
         self.browser.set_page_load_timeout(30)
 
     def set_cookies(self, **cookies):

@@ -111,7 +111,7 @@ def task_manager(job_id, job_name):
                     task_running = Task.objects.filter(job__id=job_id, status='running')
                     running_count=task_running.count()
                     if not running_count:break
-                    print('[+] Waiting runnning tasks: [{}]'.format(running_count()))
+                    print('[+] Waiting runnning tasks: [{}]'.format(running_count))
                     time.spleep(5)
                 break
             print('[-] No task for job [{0}]'.format(job_name))

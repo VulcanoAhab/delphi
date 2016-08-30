@@ -65,10 +65,12 @@ def task_run(task_id):
         ProcessSequence.set_browser(wd)
         if mapper:
             ProcessSequence.mapping(mapper)
-        if sequence:
+        elif sequence:
             indexed_seq=sequence.indexed_grabbers.all(
                            ).order_by('sequence_index')
             ProcessSequence.set_sequence(indexed_seq)
+        else:
+            raise Exception('Must set mapper or sequence')
         ProcessSequence.run()
         #pass proxy to data collection ----
         status='done'

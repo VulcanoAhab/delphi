@@ -56,6 +56,22 @@ class Task(models.Model):
     def __str__(self):
         '''
         '''
-        return 'url:({})id:({})'.format(self.target_url, str(self.id))
+        return 'url:[{}]id:[{}]'.format(self.target_url, str(self.id))
 
 
+class MapperProducer(models.Model):
+    '''
+    '''
+    urls_list=models.TextField()
+    job=models.ForeignKey('workers.Job')
+    status=models.CharField(max_length=50, choices=_status)
+    task_config=models.ForeignKey('workers.TaskConfig')
+    type=models.CharField(max_length=150, default='request')
+    round_number=models.IntegerField(default=0)
+    created_at=models.DateTimeField(auto_now_add=True)
+    last_modified=models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        '''
+        '''
+        return 'jobMapper:[{}]'.format(self.job.name)

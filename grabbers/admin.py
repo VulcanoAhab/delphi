@@ -13,10 +13,15 @@ class TargetAdmin(admin.ModelAdmin):
     '''
     search_fields=['field_name',]
 
+class GrabbersAdmin(admin.ModelAdmin):
+    '''
+    '''
+    search_fields=['name',]
+
 admin.site.register(Sequence, SequenceAdmin)
 admin.site.register(Mapper)
 admin.site.register(IndexedGrabber)
-admin.site.register(Grabber)
+admin.site.register(Grabber, GrabbersAdmin)
 admin.site.register(Target,TargetAdmin)
 admin.site.register(Extractor)
 admin.site.register(PostElementAction)

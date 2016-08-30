@@ -1,5 +1,5 @@
 from django.contrib import admin
-from workers.models import Job, TaskConfig, Task
+from workers.models import Job, TaskConfig, Task, MapperProducer
 # Register your models here.
 
 class TaskAdmin(admin.ModelAdmin):
@@ -22,3 +22,4 @@ class JobAdmin(admin.ModelAdmin):
 admin.site.register(Job)
 admin.site.register(TaskConfig)
 admin.site.register(Task, TaskAdmin)
+admin.site.register(MapperProducer)

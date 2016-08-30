@@ -161,8 +161,8 @@ class Pythoness:
         '''
         '''
         #set vars
-        print('Processing GET in Mapper..')
         field_name=mapper.field_name
+        print('[+] Starting Mapper [{}]'.format(field_name))
         selector=mapper.field_selector
         task_config=mapper.task_config
         page_object=Grabis.load_page(browser)
@@ -173,7 +173,6 @@ class Pythoness:
             gb.set_page_object(page_object)
             gb.grab()
             data=gb.get_data(field_name, ['generic_link',])
-            print('Processed data', data)
         except Exception as e:
             print('[-] Fail to extract link in mapper', e)
             return

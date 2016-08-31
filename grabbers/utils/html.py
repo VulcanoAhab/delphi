@@ -2,6 +2,7 @@ import collections
 import copy
 import tempfile
 from lxml import html
+from lxml import etree
 
 ## django imports
 from django.core.exceptions import ObjectDoesNotExist
@@ -30,7 +31,11 @@ class Grabis:
         datum=[]
         for ats in attrs:
             if ats == 'text_content':
-                content=htmlElement.text
+                estr=etree._ElementUnicodeResult #just insurance
+                if isinstance(htmlElement, (str,estr)):
+                    content=htmlElement.strip()
+                else:
+                    content=htmlElement.text
                 if not content or not content.strip():
                     content=htmlElement.text_content()
                 datum.append(content)

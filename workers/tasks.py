@@ -26,12 +26,17 @@ def task_run(task_id):
 
     init_time=time.time()
 
-    #must have
+    #get task, set to running
     task=Task.objects.get(pk=task_id)
+    task.status='running'
+    task.save()
+
+    #must have
     job=task.job
     if not task.config.sequence and not task.config.mapper:
         print('[+] Sequence or mapper must be set')
         return
+
     #loading vars
     url=task.target_url
     round_number=task.round_number
@@ -103,26 +108,21 @@ def task_manager(job_id, job_name):
 
         task = Task.objects.filter(job__id=job_id, status='created').first()
 
-        if not task:
+        if not task.count():
             ask_til_three+=1
             if ask_til_three > 3:
-                #test for running tasks
-                while True:
-                    task_running = Task.objects.filter(job__id=job_id, status='running')
-                    running_count=task_running.count()
-                    if not running_count:break
-                    print('[+] Waiting runnning tasks: [{}]'.format(running_count))
-                    time.sleep(5)
                 break
             print('[-] No task for job [{0}]'.format(job_name))
             time.sleep(30*ask_til_three)
             continue
 
-        print('[+] Starting task [{0}]'.format(task.target_url))
+        print('[+] Sending task [{0}] to queue'.format(task.target_url))
 
-        task.status='running'
+        task.status='in_queue'
         task.save()
         task_run.delay(task.id)
+
+        #update values
         task=None
         ask_til_three=0
 

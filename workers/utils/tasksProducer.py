@@ -124,12 +124,15 @@ class TaskFromUrls:
         '''
         '''
         for url in cls._urls:
+            #test if task with the same url already exists inside same job
+            task_in=Task.objects.filter(job=cls._job, target_url=url).first()
+            if task_in:continue
             task=Task(  target_url=url,
                         job=cls._job,
                         status='created',# ? to be approved ?
                         config=cls._config)
             task.save()
-            time.sleep(0.01)
+            time.sleep(0.001)
 
 
 #========================== / producer classes \ ==========================

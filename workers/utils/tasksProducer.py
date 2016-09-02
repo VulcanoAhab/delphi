@@ -4,7 +4,7 @@ import copy
 import time
 import re
 
-from workers.models import Task, Job
+from workers.models import Task, Job, TaskConfig
 from information.models import PageData
 
 #========================== / base classes \ ==========================

@@ -108,7 +108,7 @@ def task_manager(job_id, job_name):
 
         task = Task.objects.filter(job__id=job_id, status='created').first()
 
-        if not task.count():
+        if not task:
             ask_til_three+=1
             if ask_til_three > 3:
                 break

@@ -40,7 +40,7 @@ class Helpers:
             locs.url=url
             locs.save()
         try:
-            page=Page.objects.get(addr=locs.id)
+            page=Page.objects.get(addr=locs.id, job=job)
         except ObjectDoesNotExist:
             page=Page()
             #build html file

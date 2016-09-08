@@ -246,7 +246,7 @@ class Pythoness:
             locs.save()
 
         try:
-            page=Page.objects.get(addr=locs.id)
+            page=Page.objects.get(addr=locs.id, job=self._job)
         except ObjectDoesNotExist:
             page=Page()
             #build html file

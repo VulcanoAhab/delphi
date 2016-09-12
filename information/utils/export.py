@@ -30,7 +30,7 @@ class Pull:
             if fields_name:
                 page_data=page_data.filter(field_name__in=fields_name)
             if not page_data or page_data.count()==0:continue
-            pages_data.append({'page_data':page_data, 
+            pages_data.append({'page_data':page_data,
                                'page_url':page.addr.url})
         return pages_data
 
@@ -46,8 +46,8 @@ class Pull:
         '''
         pages_data=[]
         for seed in seed_urls:
-            page=Page.objects.get(addr__url=seed)
-            page_data=PageData.objects.filter(page=page)
+            pages=Page.objects.filter(addr__url=seed)
+            page_data=PageData.objects.filter(page__in=pages)
             page_dict={
                 'seed':seed,
                 'page_data':page_data,

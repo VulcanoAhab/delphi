@@ -23,6 +23,8 @@ class UrlsOneVarPaging:
     def set_base_url(cls, url):
         '''
         '''
+        if url.endswith('/'):
+            url = url[:-1]
         cls._base_url=url
 
     @classmethod
@@ -38,7 +40,7 @@ class UrlsOneVarPaging:
     def set_paging_range(cls, start_value, max_value, step_size=1):
         '''
         '''
-        cls._paging_range=list(range(start_value, max_value, step_size))
+        cls._paging_range=list(range(start_value, max_value+1, step_size))
 
     @classmethod
     def build_urls(cls):
@@ -54,6 +56,28 @@ class UrlsOneVarPaging:
         '''
         '''
         return cls._urls_list
+
+
+class UrlsOneVarPath(UrlsOneVarPaging):
+    '''
+    '''
+
+    @classmethod
+    def set_paging_range(cls, start_value, max_value, step_size=1):
+        if start_value.isalpha() and max_value.isalpha():
+            start_value = ord(start_value)
+            max_value = ord(max_value)
+
+        super(UrlsOneVarPath, cls).set_paging_range(
+            start_value, max_value, step_size)
+
+    @classmethod
+    def build_urls(cls, ascii=False):
+        for param_value in cls._paging_range:
+            if ascii:
+                param_value = chr(param_value)
+            new_url = '{}/{}'.format(cls._base_url, param_value)
+            cls._urls_list.append(new_url)
 
 
 class TaskFromResults:

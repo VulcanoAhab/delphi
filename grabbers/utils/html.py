@@ -3,6 +3,7 @@ import copy
 import tempfile
 from lxml import html
 from lxml import etree
+from urllib.parse import urlparse
 
 ## django imports
 from django.core.exceptions import ObjectDoesNotExist
@@ -182,13 +183,21 @@ class Pythoness:
             print('[-] Fail to extract link in mapper', e)
             return
         #create mapper tasks
-        urls=[d for e in data for d in e[field_name] if d]
+        current_url = urlparse(browser.current_url)
+        urls=[self.map_url(d, current_url) for e in data for d in e[field_name] if d]
         TaskFromUrls._job=self._job
         TaskFromUrls._config=task_config
         TaskFromUrls.set_urls(urls)
         TaskFromUrls.build_tasks()
         print('[+] Done creating tasks')
 
+    def map_url(self, u, current_url):
+        parsed_url = urlparse(u)
+        if not parsed_url.netloc:
+            parsed_url = parsed_url._replace(
+                netloc=current_url.netloc.lower(),
+                scheme=current_url.scheme)
+        return parsed_url.geturl()
 
     def session(self, browser, element_index=-1):
         '''

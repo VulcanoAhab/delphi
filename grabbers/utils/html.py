@@ -95,6 +95,9 @@ class Grabis:
 
     def get_data(self, field_name, attrs=[], as_elements=False):
         '''
+        returns
+        ------
+        list: [{field_name:field_data, index:element_index},...]
         '''
         if as_elements: return self.data
         return Grabis.load_data_from_selected(self.data, field_name, attrs)
@@ -165,12 +168,22 @@ class Pythoness:
 
     def map_targets(self, mapper, browser):
         '''
+        action
+        ------
+        maps urls on target pages
+        creates tasks with diferent taskconfigs
+        save url with field name on information db
+
+        obs
+        ---
+        this guy here is an hybric fellow
+        so he is kind out place here...
         '''
         #set vars
         field_name=mapper.field_name
         print('[+] Starting Mapper [{}]'.format(field_name))
         selector=mapper.field_selector
-        task_config=mapper.task_config
+        task_configs=TaskConfig.objects.filter(mapper=mapper)
         page_object=Grabis.load_page(browser)
         #mine target links
         try:
@@ -178,20 +191,33 @@ class Pythoness:
             gb.set_selector(selector)
             gb.set_page_object(page_object)
             gb.grab()
+            #mapper element attr is always generic link
             data=gb.get_data(field_name, ['generic_link',])
         except Exception as e:
-            print('[-] Fail to extract link in mapper', e)
+            print('[-] Fail to extract link in mapper: [{}]'.format(e))
             return
         #create mapper tasks
         current_url = urlparse(browser.current_url)
-        urls=[self.map_url(d, current_url) for e in data for d in e[field_name] if d]
-        TaskFromUrls._job=self._job
-        TaskFromUrls._config=task_config
-        TaskFromUrls.set_urls(urls)
-        TaskFromUrls.build_tasks()
-        print('[+] Done creating tasks')
+        #--save page source
+        page=browser.page_source(job=self._job, return_page=True)
+        urls=[]
+        for element in data:
+            element_index=element['index']
+            for mined_url in element[field_name]:
+                if not mined_url:continue
+                full_url=self._map_url(mined_url, current_url)
+                urls.append(full_url)
+                self._save_field(field_name, full_url, element_index, page)
+        for task_config in task_configs:
+            TaskFromUrls._job=self._job
+            TaskFromUrls._config=task_config
+            TaskFromUrls.set_urls(urls)
+            TaskFromUrls.build_tasks()
+        print('[+] Done creating [{}] tasks for job [{}]'.format(
+                                task_configs*len(urls), self._job))
 
-    def map_url(self, u, current_url):
+    #---- mapper helper
+    def _map_url(self, u, current_url):
         parsed_url = urlparse(u)
         if not parsed_url.netloc:
             parsed_url = parsed_url._replace(
@@ -245,39 +271,54 @@ class Pythoness:
         '''
         '''
         url=browser.current_url
-        url_id=make_url_id(url)
+        self._build_urllocators_objs(url)
+        for dict_item in self._data['page_data']:
+            element_index = dict_item.pop('index')
+            for field_name, values in dict_item.items():
+                for value in values:
+                    if not value:continue
+                    self._save_field(field_name, value, element_index, page)
+
+    # --- save data  helpers
+    def __build_urllocators_objs(self, url):
+        '''
+        obs
+        ---------
+        this function is very similar
+        to save page source in browser
+        the only difference is html source persistence
+
+        *** soon will merge both ****
+        '''
         #build url relations
+        url_id=make_url_id(url)
         try:
             locs=Locator.objects.get(url_id=url_id)
         except ObjectDoesNotExist:
             locs=Locator()
             locs.url=url
             locs.save()
-
+        #build page relation
         try:
             page=Page.objects.get(addr=locs.id, job=self._job)
         except ObjectDoesNotExist:
             page=Page()
-            #build html file
             page.job=self._job
             page.addr=locs
             page.save()
-            #close temp file
+        return page
 
-        for dict_item in self._data['page_data']:
-            element_index = dict_item.pop('index')
-            for field_name, values in dict_item.items():
-                for value in values:
-                    if not value:continue
-                    control_key=make_control_key(field_name, value, page.id)
-                    is_duplicate=PageData.objects.filter(control_key=control_key)
-                    if is_duplicate.count():continue
-                    pd=PageData()
-                    pd.field_name=field_name
-                    pd.field_value=value
-                    pd.element_index = element_index
-                    pd.page=page
-                    pd.save()
-
+    def _save_field(self, field_name, value, element_index, page):
+        '''
+        '''
+        control_key=make_control_key(field_name, value, page.id)
+        is_duplicate=PageData.objects.filter(control_key=control_key)
+        if is_duplicate.count():return
+        pd=PageData()
+        pd.field_name=field_name
+        pd.field_value=value
+        pd.element_index = element_index
+        pd.page=page
+        pd.save()
 
 

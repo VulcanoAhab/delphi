@@ -98,8 +98,7 @@ class Mapper(models.Model):
     name=models.CharField(max_length=250, unique=True)
     field_name=models.CharField(max_length=250)
     field_selector=models.CharField(max_length=250)
-    #page_action=models.ForeignKey('grabbers.PageAction', blank=True, null=True)
-    task_config=models.ForeignKey('workers.TaskConfig', related_name='task_confs')
+    #task_config=models.ForeignKey('workers.TaskConfig', related_name='task_confs')
     created_at=models.DateTimeField(auto_now_add=True)
     last_modified=models.DateTimeField(auto_now=True)
 

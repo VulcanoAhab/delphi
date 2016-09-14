@@ -30,8 +30,6 @@ class TaskConfig(models.Model):
 class Job(models.Model):
     '''
     '''
-    #confs=models.ForeignKey('workers.JobConfig')
-    #seed=models.URLField(max_length=500, null=True, blank=True)
     status=models.CharField(max_length=50, choices=_status)
     results_count=models.IntegerField(default=0)
     created_at=models.DateTimeField(auto_now_add=True)

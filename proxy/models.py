@@ -25,7 +25,7 @@ class Proxy(models.Model):
                               'bin',
                               'browsermob-proxy')
 
-    type=models.CharField(max_length=50, choices=_proxs, default='browsermobproxy')
+    type=models.CharField(max_length=50, choices=_proxs, default='browsermobproxy', unique=True)
     call=models.CharField(max_length=150, default=_mobCallPath)
     status=models.CharField(max_length=3, default='off', choices=_status)
 

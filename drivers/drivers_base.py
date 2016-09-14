@@ -15,6 +15,8 @@ from django.core.exceptions import ObjectDoesNotExist
 #db models
 from urlocators.models import Page, Locator, make_url_id
 
+#proxy
+from proxy.utils.proxy import MobProxy
 
 #===========================================================#
 #=================== Drivers helpers =======================#
@@ -73,6 +75,7 @@ class BaseSeleniumBrowser:
         self.host=''
         self.pid=None
         self.browser=None
+        self._proxy_data={}
 
     def set_host(self, host):
         '''
@@ -119,10 +122,17 @@ class BaseSeleniumBrowser:
         '''
         self.browser.back()
 
-    def get(self, url):
+    def get(self, url, proxy=None):
         '''
         '''
+        if not proxy: 
+            self.browser.get(url)
+            return
+        MobProxy.connect()
+        MobProxy.set_get(url)
         self.browser.get(url)
+        self._proxy_data=MobProxy.get_data()
+        MobProxy.close()
 
     def close(self):
         '''
@@ -152,6 +162,11 @@ class BaseSeleniumBrowser:
         except Exeption as e:
             print('Did not find the element', target_element)
             return 1
+    
+    def get_proxy_data(self):
+        '''
+        '''
+        return self._proxy_data
 
     def switch_to_frame(self, **kwargs):
         '''
@@ -168,7 +183,8 @@ class BaseRequests:
         self._headers=None
         self._cookies=None
         self.browser={}
-
+        self._proxy_data={} 
+    
     def build_driver(self, **kwargs):
         '''
         '''
@@ -198,15 +214,22 @@ class BaseRequests:
         '''
         raise TypeError('Requests driver does not have history')
 
-    def get(self, url, allow_redirects=False):
+    def get(self, url, allow_redirects=False, proxy=None):
         '''
         '''
+        if proxy:
+            MobProxy.connect()
+            MobProxy.set_get(url)
         result=self.browser['session'].get(url, allow_redirects=allow_redirects)
         if result.status_code != 200:
             msg='LeanRequests GET fail. Headers [{}]'.format(result.headers)
             raise Exception(msg)
         self.browser['url']=url
         self.browser['source']=result.text
+        self.browser['headers']=result.headers
+        if proxy: #ugly have to improve soon
+            self._proxy_data=MobProxy.get_data()
+            MobProxy.close()
 
     def close(self):
         '''
@@ -220,33 +243,12 @@ class BaseRequests:
         '''
         '''
         return self.browser['url']
-
-    #dummy - will improve this
-    def wait_for_element(self, target_element, eltype, timeout=5):
+   
+ 
+    def get_proxy_data(self):
         '''
         '''
-        return
-
-    def get_header_field(self, **kwargs):
-        '''
-        '''
-        req=['result_container',
-             'header_field',
-             'job']
-
-        for r in req:
-            if r in req:continue
-            raise TypeError('[-] Missing field: [{}]'.format(r))
-
-        headers=self.browser.headers
-        if field_name not in headers or not headers[field_name]:
-            msg='[-] Header field not found. Field: {0} | Headers: {1}'
-            print(msg.format(field_name, headers))
-            return
-
-        field_value=headers[field_name]
-        key_name='-'.join([job.name, field_name.lower()])
-        kwargs['result_container'].append({key_name:field_value})
+        return self._proxy_data
 
 
     def switch_to_frame(self, **kwargs):

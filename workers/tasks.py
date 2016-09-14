@@ -43,27 +43,23 @@ def task_run(task_id):
     control_key=build_control_key(url, job.id)
     mapper=task.config.mapper
     sequence=task.config.sequence
-
-    #test proxy
     proxy=task.config.proxy
-    if proxy and not proxy.running:
-        print('[+] Proxy is set but not running...')
-        exit(0)
-
+    
 
     #build driver
     try:
-
+        
         wd=getattr(browsers, task.config.driver.type)()
         wd.load_confs(task.config)
         wd.build_driver()
-
-        if proxy:
-            #prepare for get
-            pass
-
+        
         print('[+] Starting GET request [{}]'.format(url))
-        wd.get(url)
+        
+        #test proxy
+        if proxy and proxy.status == 'off':
+                raise SystemError('[+] Proxy is set but server is not running...')
+            
+        wd.get(url, proxy=proxy)
 
         #process get
         ProcessSequence.set_job(job)

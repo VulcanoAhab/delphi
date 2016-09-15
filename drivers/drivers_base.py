@@ -75,23 +75,27 @@ class BaseSeleniumBrowser:
         self.host=''
         self.pid=None
         self.browser=None
-        self._proxy_data={}
+        self.proxy=None
 
     def set_host(self, host):
         '''
         '''
         self.host=host
 
-    def build_driver(self, **kwargs):
+    def build_driver(self, proxy=None):
         '''
         '''
-        if kwargs:
-            self.browser=getattr(self._driver, self._driver_name)(**kwargs)
+        if proxy:
+            MobProxy.connect()
+            proxy_addr='--proxy=127.0.0.1:{}'.format(MobProxy._proxy.port)
+            service_args=[proxy_addr, '--ignore-ssl-errors=yes']
+            self.browser=getattr(self._driver, self._driver_name)(service_args=service_args)
         else:
             self.browser=getattr(self._driver, self._driver_name)()
         if self._driver_name == 'PhantomJS':
             self.browser.set_window_size(1124, 850)
             self.pid=self.browser.service.process.pid
+        #-------- set proxy args -----------------------------
         #wait some time for elements
         self.browser.implicitly_wait(5)
         self.browser.set_page_load_timeout(30)
@@ -125,14 +129,8 @@ class BaseSeleniumBrowser:
     def get(self, url, proxy=None):
         '''
         '''
-        if not proxy: 
-            self.browser.get(url)
-            return
-        MobProxy.connect()
         MobProxy.set_get(url)
         self.browser.get(url)
-        self._proxy_data=MobProxy.get_data()
-        MobProxy.close()
 
     def close(self):
         '''
@@ -141,6 +139,7 @@ class BaseSeleniumBrowser:
         if self._driver_name == 'PhantomJS':
             self.browser.service.process.send_signal(signal.SIGTERM)
         self.browser.quit()
+        MobProxy.close()
 
     @property
     def current_url(self):
@@ -162,11 +161,11 @@ class BaseSeleniumBrowser:
         except Exeption as e:
             print('Did not find the element', target_element)
             return 1
-    
+       
     def get_proxy_data(self):
         '''
         '''
-        return self._proxy_data
+        return MobProxy.get_data()
 
     def switch_to_frame(self, **kwargs):
         '''
@@ -183,11 +182,13 @@ class BaseRequests:
         self._headers=None
         self._cookies=None
         self.browser={}
-        self._proxy_data={} 
+        self.proxy=None
     
-    def build_driver(self, **kwargs):
+    def build_driver(self, proxy=None):
         '''
         '''
+        if proxy:
+            raise NotImplemented('[+] Proxy not available in lean requests ')
         session=requests.Session()
         session.headers=self._headers
         self.browser['session']=session
@@ -214,12 +215,10 @@ class BaseRequests:
         '''
         raise TypeError('Requests driver does not have history')
 
-    def get(self, url, allow_redirects=False, proxy=None):
+    def get(self, url, allow_redirects=False):
         '''
         '''
-        if proxy:
-            MobProxy.connect()
-            MobProxy.set_get(url)
+        MobProxy.set_get(url)
         result=self.browser['session'].get(url, allow_redirects=allow_redirects)
         if result.status_code != 200:
             msg='LeanRequests GET fail. Headers [{}]'.format(result.headers)
@@ -227,9 +226,11 @@ class BaseRequests:
         self.browser['url']=url
         self.browser['source']=result.text
         self.browser['headers']=result.headers
-        if proxy: #ugly have to improve soon
-            self._proxy_data=MobProxy.get_data()
-            MobProxy.close()
+    
+    def get_proxy_data(self):
+        '''
+        '''
+        return MobProxy.get_data()
 
     def close(self):
         '''
@@ -237,6 +238,7 @@ class BaseRequests:
         if not self.browser.get('session'):return
         self.browser['session'].close()
         self.browser={}
+        MobProxy.close()
 
     @property
     def current_url(self):
@@ -244,12 +246,6 @@ class BaseRequests:
         '''
         return self.browser['url']
    
- 
-    def get_proxy_data(self):
-        '''
-        '''
-        return self._proxy_data
-
 
     def switch_to_frame(self, **kwargs):
         '''

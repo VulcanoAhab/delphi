@@ -48,19 +48,14 @@ def task_run(task_id):
 
     #build driver
     try:
-        
         wd=getattr(browsers, task.config.driver.type)()
         wd.load_confs(task.config)
-        wd.build_driver()
-        
-        print('[+] Starting GET request [{}]'.format(url))
-        
         #test proxy
         if proxy and proxy.status == 'off':
                 raise SystemError('[+] Proxy is set but server is not running...')
-            
-        wd.get(url, proxy=proxy)
-
+        wd.build_driver(proxy)
+        print('[+] Starting GET request [{}]'.format(url))
+        wd.get(url)
         #process get
         ProcessSequence.set_job(job)
         ProcessSequence.set_browser(wd)

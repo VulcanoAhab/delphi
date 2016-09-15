@@ -50,6 +50,8 @@ class ProcessSequence:
             ps.set_grabber(indexed_grabber.grabber)
             ps.session(cls._browser, element_index=index)
             ps.save_data(cls._browser)
+            if cls._browser.proxy:
+                ps.save_proxy_data(cls._browser)
 
     @classmethod
     def run(cls):

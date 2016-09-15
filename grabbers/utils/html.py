@@ -321,4 +321,8 @@ class Pythoness:
         pd.page=page
         pd.save()
 
-
+    
+    def save_proxy_data(self, browser):
+        '''
+        '''
+        pass

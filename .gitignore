@@ -11,6 +11,7 @@ media
 static
 specials
 data
+proxy/server_pid
 
 # C extensions
 *.so

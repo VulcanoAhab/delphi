@@ -38,4 +38,21 @@ class Proxy(models.Model):
         return self.type
 
 
+class Entry(models.Model):
+    '''
+    '''
+    url=models.URLField(max_length=500)
+    method=models.CharField(max_length=50)
+    dest_ip=models.GenericIPAddressField()
+    job_id=models.IntegerField()
+    duration=models.IntegerField()
+    content_type=models.CharField(max_length=150)
+    target_url=models.URLField(max_length=500)
+    created_at=models.DateTimeField(auto_now_add=True)
+    last_modified=models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        '''
+        '''
+        return '::'.join([str(self.job_id), self.url[:75]])
 

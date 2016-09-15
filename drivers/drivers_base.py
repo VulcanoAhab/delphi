@@ -15,9 +15,6 @@ from django.core.exceptions import ObjectDoesNotExist
 #db models
 from urlocators.models import Page, Locator, make_url_id
 
-#proxy
-from proxy.utils.proxy import MobProxy
-
 #===========================================================#
 #=================== Drivers helpers =======================#
 class Helpers:
@@ -82,23 +79,25 @@ class BaseSeleniumBrowser:
         '''
         self.host=host
 
-    def build_driver(self, proxy=None):
+    def build_driver(self, proxy_port=None):
         '''
         '''
-        if proxy:
-            MobProxy.connect()
-            proxy_addr='--proxy=127.0.0.1:{}'.format(MobProxy._proxy.port)
+        #set browser global waits
+        max_implicity=5
+        max_timeout=30
+        if proxy_port:
+            proxy_addr='--proxy=127.0.0.1:{}'.format(proxy_port)
             service_args=[proxy_addr, '--ignore-ssl-errors=yes']
             self.browser=getattr(self._driver, self._driver_name)(service_args=service_args)
         else:
             self.browser=getattr(self._driver, self._driver_name)()
+        #phantom window spec
         if self._driver_name == 'PhantomJS':
             self.browser.set_window_size(1124, 850)
             self.pid=self.browser.service.process.pid
-        #-------- set proxy args -----------------------------
-        #wait some time for elements
-        self.browser.implicitly_wait(5)
-        self.browser.set_page_load_timeout(30)
+        #waits
+        self.browser.implicitly_wait(max_implicity)
+        self.browser.set_page_load_timeout(max_timeout)
 
     def set_cookies(self, **cookies):
         '''
@@ -126,46 +125,27 @@ class BaseSeleniumBrowser:
         '''
         self.browser.back()
 
-    def get(self, url, proxy=None):
+    def get(self, url):
         '''
         '''
-        MobProxy.set_get(url)
         self.browser.get(url)
 
     def close(self):
         '''
         '''
-        if not self.browser:return
-        if self._driver_name == 'PhantomJS':
-            self.browser.service.process.send_signal(signal.SIGTERM)
-        self.browser.quit()
-        MobProxy.close()
+        if self.browser:
+            if self._driver_name == 'PhantomJS':
+                self.browser.service.process.send_signal(signal.SIGTERM)
+            self.browser.quit()
+        if self.proxy:
+            self.proxy.close()
+        return
 
     @property
     def current_url(self):
         '''
         '''
         return self.browser.current_url
-
-    def wait_for_element(self, target_element, eltype, timeout=3):
-        '''
-        wait for html element to load
-        for now, only working with xpath pattern
-        '''
-        timeout=timeout
-        eltypeDict={'xpath':By.XPATH,}
-        target=(eltypeDict[eltype], target_element)
-        element_present = EC.presence_of_element_located(target)
-        try:
-            WebDriverWait(self.browser, timeout).until(element_present)
-        except Exeption as e:
-            print('Did not find the element', target_element)
-            return 1
-       
-    def get_proxy_data(self):
-        '''
-        '''
-        return MobProxy.get_data()
 
     def switch_to_frame(self, **kwargs):
         '''
@@ -183,7 +163,7 @@ class BaseRequests:
         self._cookies=None
         self.browser={}
         self.proxy=None
-    
+
     def build_driver(self, proxy=None):
         '''
         '''
@@ -218,7 +198,6 @@ class BaseRequests:
     def get(self, url, allow_redirects=False):
         '''
         '''
-        MobProxy.set_get(url)
         result=self.browser['session'].get(url, allow_redirects=allow_redirects)
         if result.status_code != 200:
             msg='LeanRequests GET fail. Headers [{}]'.format(result.headers)
@@ -226,11 +205,6 @@ class BaseRequests:
         self.browser['url']=url
         self.browser['source']=result.text
         self.browser['headers']=result.headers
-    
-    def get_proxy_data(self):
-        '''
-        '''
-        return MobProxy.get_data()
 
     def close(self):
         '''
@@ -238,14 +212,13 @@ class BaseRequests:
         if not self.browser.get('session'):return
         self.browser['session'].close()
         self.browser={}
-        MobProxy.close()
 
     @property
     def current_url(self):
         '''
         '''
         return self.browser['url']
-   
+
 
     def switch_to_frame(self, **kwargs):
         '''

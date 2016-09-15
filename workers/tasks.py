@@ -9,6 +9,9 @@ from workers.models import Job, Task
 from workers.utils.commons import build_control_key
 from grabbers.utils.processors import ProcessSequence
 
+#proxy
+from proxy.utils.proxy import MobProxy
+
 ### ----- (1) helpers ----- ###
 
 
@@ -38,22 +41,20 @@ def task_run(task_id):
         return
 
     #loading vars
+    wd=None
     url=task.target_url
     round_number=task.round_number
     control_key=build_control_key(url, job.id)
     mapper=task.config.mapper
     sequence=task.config.sequence
-    proxy=task.config.proxy
-    
-
-    #build driver
     try:
+        #proxy
+        MobProxy.connect(task)
+        proxy_port=MobProxy.port()
+        #build driver
         wd=getattr(browsers, task.config.driver.type)()
         wd.load_confs(task.config)
-        #test proxy
-        if proxy and proxy.status == 'off':
-                raise SystemError('[+] Proxy is set but server is not running...')
-        wd.build_driver(proxy)
+        wd.build_driver(proxy_port)
         print('[+] Starting GET request [{}]'.format(url))
         wd.get(url)
         #process get
@@ -68,20 +69,20 @@ def task_run(task_id):
         else:
             raise Exception('Must set mapper or sequence')
         ProcessSequence.run()
-        #pass proxy to data collection ----
+        MobProxy.save_data()
         status='done'
-    except Exception as e:
-        print('[-] Exception on task level', e)
+    except Exception:
+        traceback.print_exc()
         status='fail'
 
-    wd.close()
+    if wd:wd.close()
     time_used=time.time()-init_time
     print('[+] Process took: [{0:.2f}] seconds'.format(time_used))
 
     #status task done
     task.status=status
     task.save()
-
+    return
 
 ## ------ task manager :: provisory manager, starts tasks per job -- as pipe
 

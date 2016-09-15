@@ -231,7 +231,7 @@ class Pythoness:
         # set base values
         if 'target' in self._conf:
             selector=self._conf['target']['selector']
-            print('[+] Start mining with selector [{0}]'.format(selector))
+            print('[+] Start targeting selector [{0}]'.format(selector))
             page_object=Grabis.load_page(browser)
             try:
                 gb=Grabis()
@@ -280,7 +280,7 @@ class Pythoness:
                     self._save_field(field_name, value, element_index, page)
 
     # --- save data  helpers
-    def __build_urllocators_objs(self, url):
+    def _build_urllocators_objs(self, url):
         '''
         obs
         ---------
@@ -321,8 +321,9 @@ class Pythoness:
         pd.page=page
         pd.save()
 
-    
-    def save_proxy_data(self, browser):
+    @classmethod
+    def save_proxy_data(cls, browser):
         '''
         '''
-        pass
+        print('Called ----------- save proxy data')
+        print(browser.get_proxy_data())

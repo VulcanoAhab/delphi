@@ -6,8 +6,9 @@ import urllib.parse as uparse
 class AdminEntry(admin.ModelAdmin):
     '''
     '''
-    list_display=['netloc', 'path', 'dest_ip', 'duration', 'target_url']
+    list_display=['netloc', 'path', 'dest_ip', 'response_status', 'duration', 'target_url']
     search_fields=['url', 'dest_ip']
+    list_filter=['response_status',]
 
     def netloc(self, obj):
         '''

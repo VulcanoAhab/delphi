@@ -46,6 +46,7 @@ class Entry(models.Model):
     dest_ip=models.GenericIPAddressField()
     job_id=models.IntegerField()
     duration=models.IntegerField()
+    response_status=models.IntegerField()
     content_type=models.CharField(max_length=150)
     target_url=models.URLField(max_length=500)
     created_at=models.DateTimeField(auto_now_add=True)

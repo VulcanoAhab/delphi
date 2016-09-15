@@ -98,12 +98,14 @@ class MobProxy:
         #response data
         response=entry['response']
         content_type=response['content']['mimeType']
+        response_status=response['status']
         entry_dict={
             'url':url,
             'method':method,
             'dest_ip':dest_ip,
             'job_id':job_id,
             'duration':duration,
+            'response_status':response_status,
             'content_type':content_type,
             'target_url':cls._target_url,
                 }

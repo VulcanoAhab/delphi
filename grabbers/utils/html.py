@@ -61,9 +61,13 @@ class Grabis:
         return data_container
 
     @staticmethod
-    def load_page(browser):
+    def load_page(job, browser, save_source=True):
         '''
         '''
+        #save page source
+        if save_source:
+            browser.page_source(job=job)
+        #get and return page source
         source=browser.get_page_source()
         return html.fromstring(source)
 
@@ -184,7 +188,7 @@ class Pythoness:
         print('[+] Starting Mapper [{}]'.format(field_name))
         selector=mapper.field_selector
         task_configs=TaskConfig.objects.filter(mapper=mapper)
-        page_object=Grabis.load_page(browser)
+        page_object=Grabis.load_page(self._job, browser, save_source=False)
         #mine target links
         try:
             gb=Grabis()
@@ -228,22 +232,23 @@ class Pythoness:
     def session(self, browser, element_index=-1):
         '''
         '''
+        #get general vals
+        browser_name=browser.__class__.__name__
         # set base values
         if 'target' in self._conf:
             selector=self._conf['target']['selector']
             print('[+] Start targeting selector [{0}]'.format(selector))
-            page_object=Grabis.load_page(browser)
+            page_object=Grabis.load_page(self._job, browser)
             try:
                 gb=Grabis()
                 gb.set_selector(selector)
                 gb.set_page_object(page_object)
             except Exception as e:
-                print('=====', e)
                 print('[-] Fail to load conf in Grabis', e)
                 return
             if 'element_action' in self._conf:
                 #test browser type
-                if browser.__class__.__name__ == 'LeanRequests':
+                if browser_name == 'LeanRequests':
                     raise TypeError('[-] Lean Requests has no action')
                 post_action=self._conf['post_action']
                 gb.action(self._conf['element_action'], browser,
@@ -258,20 +263,31 @@ class Pythoness:
         if 'page_action' in self._conf:
             #it's dirty - needs to improve
             page_action=self._conf['page_action']
-            field_name=None
-            if 'extractors' in self._conf:
-                field_name=self._conf['extractors']
+            action_data={}
+            #legacy - now is required
+            if page_action == 'page_source':return
+            if page_action == 'get_header_field':
+                if browser_name != 'LeanRequests':
+                    raise TypeError('[-] Only Lean Requests has get header field')
+                #target header field is passed as extractor
+                action_data.update({'header_field':self._conf['extractors']})
+            if page_action == 'execute_script':
+                if browser_name == 'LeanRequests':
+                    raise TypeError('[-] Lean Requests has no execute script')
+                if not selector: #for now script is send by selector ---------
+                    raise TypeError('[-] Script in target is required')
+                field_name=field_name=self._conf['target']['name']
+                action_data={'field_name':field_name, 'script':selector}
             print('[+] Start page action [{0}]'.format(page_action))
-            getattr(browser, page_action)(job=self._job,
-                                          page_data=self._data,
-                                          header_field=field_name)
+            getattr(browser, page_action)(page_data=self._data,
+                                          action_data=action_data)
 
 
     def save_data(self, browser):
         '''
         '''
         url=browser.current_url
-        self._build_urllocators_objs(url)
+        page=self._build_urllocators_objs(url)
         for dict_item in self._data['page_data']:
             element_index = dict_item.pop('index')
             for field_name, values in dict_item.items():

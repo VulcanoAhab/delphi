@@ -3,8 +3,9 @@ from django.db import models
 
 _SPATTERN = [
         #('cs', 'css'),
+        #('regex', 'regex'),
         ('xpath', 'xpath'),
-        ('regex', 'regex'),
+        ('script', 'script'),
     ]
 
 
@@ -13,12 +14,13 @@ class PageAction(models.Model):
     '''
     _pa=[
         ('back','back'),
-        ('page_source', 'page_source'),
-        #('get_header_field', 'get_header_field'),
+        ('execute_script', 'execute_script'),
+        ('get_header_field', 'get_header_field'),
+        ('wait_3_seconds', 'wait_3_seconds'),
         #('switch_to_frame', 'switch_to_frame'),
         #('scroll_page', 'scroll_page'),
-    ]
-    type=models.CharField(max_length=50, choices=_pa, default='page_source')
+            ]
+    type=models.CharField(max_length=50, choices=_pa, default='page_source', unique=True)
     index=models.IntegerField(default=0)
 
     def __str__(self):
@@ -34,7 +36,7 @@ class ElementAction(models.Model):
     _dos=[
         ('click','click'),
     ]
-    type=models.CharField(max_length=50, choices=_dos, default='click')
+    type=models.CharField(max_length=50, choices=_dos, default='click', unique=True)
     index=models.IntegerField(default=0)
 
     def __str__(self):
@@ -98,7 +100,6 @@ class Mapper(models.Model):
     name=models.CharField(max_length=250, unique=True)
     field_name=models.CharField(max_length=250)
     field_selector=models.CharField(max_length=250)
-    #task_config=models.ForeignKey('workers.TaskConfig', related_name='task_confs')
     created_at=models.DateTimeField(auto_now_add=True)
     last_modified=models.DateTimeField(auto_now=True)
 

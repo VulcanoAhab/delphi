@@ -2,6 +2,8 @@ import tempfile
 import requests
 import os
 import signal
+import json
+import time
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
@@ -120,7 +122,7 @@ class BaseSeleniumBrowser:
         url=self.browser.current_url
         return Helpers.save_page_source(url, source, **kwargs)
 
-    def back(self, **kwargs):
+    def back(self, job,  **kwargs):
         '''
         '''
         self.browser.back()
@@ -146,6 +148,23 @@ class BaseSeleniumBrowser:
         '''
         '''
         return self.browser.current_url
+
+    def execute_script(self, page_data, action_data):
+        '''
+        '''
+        field_name=action_data['field_name']
+        script=action_data['script']
+        value=self.browser.execute_script(script)
+        if isinstance(value, (list,dict)):
+            value=json.dumps(value)
+        page_data['page_data'].append(
+                {field_name:[value,], 'index':-1})
+        return
+
+    def wait_3_seconds(self, **kwargs):
+        '''
+        '''
+        time.sleep(3)
 
     def switch_to_frame(self, **kwargs):
         '''
@@ -219,11 +238,20 @@ class BaseRequests:
         '''
         return self.browser['url']
 
+    def get_header_field(self, page_data, action_data):
+        '''
+        '''
+        header_field=action_data['header_field']
+        header_value=self.browser['headers'].get(header_field, 'None')
+        page_data['page_data'].append(
+                {header_field:[header_value,], 'index':-1})
+        return
 
-    def switch_to_frame(self, **kwargs):
+    def wait_3_seconds(self, **kwargs):
         '''
         '''
-        raise TypeError('[-] LeanRequests is unable to switch frames')
+        time.sleep(3)
+
 
 
 class DriverChoices:

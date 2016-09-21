@@ -89,6 +89,18 @@ if $cygwin; then
   [ -n "$REPO" ] && REPO=`cygpath --path --windows "$REPO"`
 fi
 
+
+echo "$JAVACMD" $JAVA_OPTS \
+  $EXTRA_JVM_ARGUMENTS \
+  -classpath "$CLASSPATH" \
+  -Dapp.name="browsermob-proxy" \
+  -Dapp.pid="$$" \
+  -Dapp.repo="$REPO" \
+  -Dbasedir="$BASEDIR" \
+  net.lightbody.bmp.proxy.Main \
+  "$@"
+
+
 exec "$JAVACMD" $JAVA_OPTS \
   $EXTRA_JVM_ARGUMENTS \
   -classpath "$CLASSPATH" \

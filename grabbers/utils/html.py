@@ -299,7 +299,7 @@ class Pythoness:
             for field_name, values in dict_item.items():
                 for value in values:
                     if not value:continue
-                    self._save_field(field_name, value, element_index)
+                    self._save_field(field_name, value, element_index, page)
 
     # --- save data  helpers
     def _build_urllocators_objs(self, url):

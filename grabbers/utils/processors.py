@@ -5,6 +5,7 @@ class ProcessSequence:
     '''
     _browser=None
     _job=None
+    _task=None
     _sequence=None
     _sequence_maps={
         'size':1,
@@ -16,6 +17,13 @@ class ProcessSequence:
         '''
         '''
         cls._job=job
+
+    @classmethod
+    def set_task(cls, task):
+        '''
+        '''
+        cls._task=task
+
 
     @classmethod
     def set_browser(cls, browser):
@@ -47,6 +55,7 @@ class ProcessSequence:
             print('[+] Grabber [{}] running.'.format(indexed_grabber))
             ps=Pythoness()
             ps.set_job(cls._job)
+            ps.set_task(cls._task)
             ps.set_grabber(indexed_grabber.grabber)
             ps.session(cls._browser, element_index=index)
             ps.save_data(cls._browser)

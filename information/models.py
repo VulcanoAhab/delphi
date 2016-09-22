@@ -17,9 +17,11 @@ class PageData(models.Model):
     field_name=models.CharField(max_length=150)
     field_value=models.TextField(null=True)
     page=models.ForeignKey('urlocators.Page')
+    task=models.ForeignKey('workers.Task')
+    job=models.ForeignKey('workers.Job')
+    element_index=models.IntegerField(default=0)
     created_at=models.DateTimeField(auto_now_add=True)
     modified_at=models.DateTimeField(auto_now=True)
-    element_index=models.IntegerField(default=0)
 
     class Meta:
         '''

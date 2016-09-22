@@ -164,6 +164,12 @@ class Pythoness:
         '''
         self._job=job
 
+    def set_task(self, task):
+        '''
+        '''
+        self._task=task
+
+
     def set_grabber(self, grabber):
         '''
         '''
@@ -293,7 +299,7 @@ class Pythoness:
             for field_name, values in dict_item.items():
                 for value in values:
                     if not value:continue
-                    self._save_field(field_name, value, element_index, page)
+                    self._save_field(field_name, value, element_index)
 
     # --- save data  helpers
     def _build_urllocators_objs(self, url):
@@ -320,6 +326,7 @@ class Pythoness:
         except ObjectDoesNotExist:
             page=Page()
             page.job=self._job
+            page.task=self._task
             page.addr=locs
             page.save()
         return page
@@ -335,6 +342,8 @@ class Pythoness:
         pd.field_value=value
         pd.element_index = element_index
         pd.page=page
+        pd.job=self._job
+        pd.task=self._task
         pd.save()
 
     @classmethod

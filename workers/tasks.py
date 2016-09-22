@@ -59,6 +59,7 @@ def task_run(task_id):
         wd.get(url)
         #process get
         ProcessSequence.set_job(job)
+        ProcessSequence.set_task(task)
         ProcessSequence.set_browser(wd)
         if mapper:
             ProcessSequence.mapping(mapper)

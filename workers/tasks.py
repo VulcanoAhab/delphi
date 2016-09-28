@@ -58,18 +58,19 @@ def task_run(task_id):
         print('[+] Starting GET request [{}]'.format(url))
         wd.get(url)
         #process get
-        ProcessSequence.set_job(job)
-        ProcessSequence.set_task(task)
-        ProcessSequence.set_browser(wd)
+        process=ProcessSequence()
+        process.set_job(job)
+        process.set_task(task)
+        process.set_browser(wd)
         if mapper:
-            ProcessSequence.mapping(mapper)
+            process.mapping(mapper)
         elif sequence:
             indexed_seq=sequence.indexed_grabbers.all(
                            ).order_by('sequence_index')
-            ProcessSequence.set_sequence(indexed_seq)
+            process.set_sequence(indexed_seq)
         else:
             raise Exception('Must set mapper or sequence')
-        ProcessSequence.run()
+        process.run()
         MobProxy.save_data()
         status='done'
     except Exception:
@@ -99,25 +100,26 @@ def task_manager(job_id, job_name):
     #need to be more intelligent -- maybe as periodic
     while True:
 
-        task = Task.objects.filter(job__id=job_id, status='created').first()
+        tasks = Task.objects.filter(job__id=job_id, status='created')
 
-        if not task:
+        if not tasks.count():
             ask_til_three+=1
-            if ask_til_three > 3:
-                break
+            if ask_til_three > 3:break
             print('[-] No task for job [{0}]'.format(job_name))
             time.sleep(30*ask_til_three)
             continue
 
-        print('[+] Sending task [{0}] to queue'.format(task.target_url))
+        for task in tasks:
+            if not task:continue
+            print('[+] Sending task [{0}] to queue'.format(task.target_url))
 
-        task.status='in_queue'
-        task.save()
-        task_run.delay(task.id)
+            task.status='in_queue'
+            task.save()
+            task_run.delay(task.id)
 
-        #update values
-        task=None
-        ask_til_three=0
+            #update values
+            ask_til_three=0
+            time.sleep(0.01)
 
     print('[+] Done all tasks for job [{0}]'.format(job_name))
 

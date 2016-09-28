@@ -1,6 +1,6 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from workers.models import Job, MapperProducer, Task
+from workers.models import Job, TaskProducer, Task
 from workers.tasks import job_starter
 import time
 
@@ -15,7 +15,7 @@ def job_manager(sender, instance, **kwargs):
     job_starter.delay(instance.id)
 
 
-@receiver(post_save, sender=MapperProducer)
+@receiver(post_save, sender=TaskProducer)
 def build_tasks(sender, instance, **kwards):
     '''
     '''

@@ -3,74 +3,72 @@ from grabbers.utils.html import Pythoness
 class ProcessSequence:
     '''
     '''
-    _browser=None
-    _job=None
-    _task=None
-    _sequence=None
-    _sequence_maps={
-        'size':1,
-        'rects':[]
-            }
-
-    @classmethod
-    def set_job(cls, job):
-        '''
-        '''
-        cls._job=job
-
-    @classmethod
-    def set_task(cls, task):
-        '''
-        '''
-        cls._task=task
+    def __init__(self):
+        self._browser=None
+        self._job=None
+        self._task=None
+        self._sequence=None
+        self._sequence_maps={
+            'size':1,
+            'rects':[]
+                }
 
 
-    @classmethod
-    def set_browser(cls, browser):
+    def set_job(self, job):
         '''
         '''
-        cls._browser=browser
+        self._job=job
 
-    @classmethod
-    def set_sequence(cls, sequence):
+    def set_task(self, task):
         '''
         '''
-        cls._sequence=sequence
+        self._task=task
 
-    @classmethod
-    def mapping(cls, mapper):
+    def set_browser(self, browser):
+        '''
+        '''
+        self._browser=browser
+
+    def set_sequence(self, sequence):
+        '''
+        '''
+        self._sequence=sequence
+
+    def mapping(self, mapper):
         '''
         '''
         if not mapper:return
+        self._browser.page_source(job=self._job)
         ps=Pythoness()
-        ps._job=cls._job
-        ps.map_targets(mapper, cls._browser)
+        ps._job=self._job
+        ps.map_targets(mapper, self._browser)
 
 
-    @classmethod
-    def fire_sequence(cls, index=-1):
+    def fire_sequence(self, index=-1):
         '''
         '''
-        for indexed_grabber in cls._sequence:
+        #always save page source before sequence
+        self._browser.page_source(job=self._job)
+        #start grabbers sequence
+        for indexed_grabber in self._sequence:
             print('[+] Grabber [{}] running.'.format(indexed_grabber))
             ps=Pythoness()
-            ps.set_job(cls._job)
-            ps.set_task(cls._task)
+            ps.set_job(self._job)
+            ps.set_task(self._task)
             ps.set_grabber(indexed_grabber.grabber)
-            ps.session(cls._browser, element_index=index)
-            ps.save_data(cls._browser)
+            ps.session(self._browser, element_index=index)
+            ps.save_data(self._browser)
 
-    @classmethod
-    def run(cls):
+    def run(self):
         '''
         '''
-        if not cls._sequence:
+        if not self._sequence:
             print('[+] No sequence to work')
             return
-        if cls._sequence_maps['size']<=1:
-            cls.fire_sequence()
+        if self._sequence_maps['size']<=1:
+            self.fire_sequence()
         else:
-            run_cycle=range(cls._sequence_maps['size'])
-            for n in run_cycle:cls.fire_sequence(index=n)
+            run_cycle=range(self._sequence_maps['size'])
+            for n in run_cycle:self.fire_sequence(index=n)
         print('[+] Sequence is done')
 

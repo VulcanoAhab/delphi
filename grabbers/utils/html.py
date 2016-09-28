@@ -61,13 +61,9 @@ class Grabis:
         return data_container
 
     @staticmethod
-    def load_page(job, browser, save_source=True):
+    def load_page(job, browser):
         '''
         '''
-        #save page source
-        if save_source:
-            browser.page_source(job=job)
-        #get and return page source
         source=browser.get_page_source()
         return html.fromstring(source)
 
@@ -79,7 +75,6 @@ class Grabis:
         self._selector=None
         #result containers
         self.data=[]
-        self.page_source={}
 
 
     def set_selector(self, selector):
@@ -155,7 +150,6 @@ class Pythoness:
         self._conf={}
         self._job=None
         self._data={
-            'page_source':[],
             'page_data':[],
                     }
 
@@ -209,7 +203,7 @@ class Pythoness:
         #create mapper tasks
         current_url = urlparse(browser.current_url)
         #--save page source
-        page=browser.page_source(job=self._job, return_page=True)
+        page=browser.get_page_source()
         urls=[]
         for element in data:
             element_index=element['index']
@@ -346,8 +340,8 @@ class Pythoness:
         pd.task=self._task
         pd.save()
 
-    @classmethod
-    def save_proxy_data(cls, browser):
+    @staticmethod
+    def save_proxy_data(browser):
         '''
         '''
         print('Called ----------- save proxy data')

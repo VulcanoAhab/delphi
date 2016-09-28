@@ -57,7 +57,7 @@ class Task(models.Model):
         return 'url:[{}]id:[{}]'.format(self.target_url, str(self.id))
 
 
-class MapperProducer(models.Model):
+class TaskProducer(models.Model):
     '''
     '''
     urls_list=models.TextField()
@@ -73,3 +73,6 @@ class MapperProducer(models.Model):
         '''
         '''
         return 'jobMapper:[{}]'.format(self.job.name)
+
+
+

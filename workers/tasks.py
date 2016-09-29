@@ -68,9 +68,9 @@ def task_run(task_id):
         if mapper:
             process.mapping(mapper)
         elif sequence:
-            indexed_seq=sequence.indexed_grabbers.all(
-                           ).order_by('sequence_index')
-            process.set_sequence(indexed_seq)
+            #indexed_seq=sequence.indexed_grabbers.all().order_by('sequence_index')
+            #process.set_sequence(indexed_seq)
+            process.set_sequence(sequence)
         else:
             raise Exception('Must set mapper or sequence')
         process.run()

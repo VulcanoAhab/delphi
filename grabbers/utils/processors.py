@@ -49,8 +49,9 @@ class ProcessSequence:
         '''
         #always save page source before sequence
         self._browser.page_source(job=self._job)
+        iseq=self._sequence.indexed_grabbers.all().order_by('sequence_index')
         #start grabbers sequence
-        for indexed_grabber in self._sequence:
+        for indexed_grabber in iseq:
             print('[+] Grabber [{}] running.'.format(indexed_grabber))
             ps=Pythoness()
             ps.set_job(self._job)

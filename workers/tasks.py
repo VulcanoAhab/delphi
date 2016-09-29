@@ -29,6 +29,9 @@ from django import db
 def task_run(task_id):
     '''
     '''
+    #one more try
+    db.close_old_connections()
+
     # start thread
     init_time=time.time()
 

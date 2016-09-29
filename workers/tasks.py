@@ -79,7 +79,13 @@ def task_run(task_id):
         traceback.print_exc()
         status='fail'
 
-    if wd:wd.close()
+    if wd:
+        try:
+            wd.close()
+        except Exception as e:
+            print('[-] Fail to close browser:[{}]'.format(e))
+            del wd
+
     time_used=time.time()-init_time
     print('[+] Process took: [{0:.2f}] seconds'.format(time_used))
 

@@ -13,8 +13,7 @@ from grabbers.utils.processors import ProcessSequence
 from proxy.utils.proxy import MobProxy
 
 #django db
-from django import db
-
+from django.db.utils import OperationalError
 ### ----- (1) helpers ----- ###
 
 
@@ -29,10 +28,6 @@ from django import db
 def task_run(task_id):
     '''
     '''
-    #control connections -- testing in threads
-    for conn in db.connections.all():
-        conn.close_if_unusable_or_obsolete()
-
     # start thread
     init_time=time.time()
 
@@ -89,8 +84,13 @@ def task_run(task_id):
     print('[+] Process took: [{0:.2f}] seconds'.format(time_used))
 
     #status task done
-    task.status=status
-    task.save()
+    try:
+        task.status=status
+        task.save()
+    except OperationalError:
+        task=Task.objects.get(pk=task_id)
+        task.status=status
+        task.save()
     return
 
 ## ------ task manager :: provisory manager, starts tasks per job -- as pipe

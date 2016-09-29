@@ -7,6 +7,7 @@ from lxml import etree
 from urllib.parse import urlparse
 
 ## django imports
+from django import db
 from django.core.exceptions import ObjectDoesNotExist
 
 ### apps imports
@@ -287,6 +288,7 @@ class Pythoness:
     def save_data(self, browser):
         '''
         '''
+        db.close_old_connections()
         url=browser.current_url
         page=self._build_urllocators_objs(url)
         for dict_item in self._data['page_data']:

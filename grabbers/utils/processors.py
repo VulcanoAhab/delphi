@@ -1,5 +1,4 @@
 from grabbers.utils.html import Pythoness
-from django import db
 
 
 class ProcessSequence:
@@ -60,11 +59,7 @@ class ProcessSequence:
             ps.set_task(self._task)
             ps.set_grabber(indexed_grabber.grabber)
             ps.session(self._browser, element_index=index)
-            try:
-                ps.save_data(self._browser)
-            except:
-                db.close_old_connections()
-                ps.save_data(self._browser)
+            ps.save_data(self._browser)
 
     def run(self):
         '''

@@ -95,7 +95,7 @@ def task_run(task_id):
         task.status=status
         task.save()
     except:
-        db.close_connection()
+        db.close_old_connections()
         task=Task.objects.get(pk=task_id)
         task.status=status
         task.save()

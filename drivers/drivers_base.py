@@ -27,6 +27,7 @@ class Helpers:
     def save_page_source(url, source, **kwargs):
         '''
         '''
+        db.close_old_connections()
         #set url id
         url_id=make_url_id(url)
         #get job
@@ -36,9 +37,6 @@ class Helpers:
             raise Exception('[-] Job is required to save page source')
         #build url relations
         try:
-            locs=Locator.objects.get(url_id=url_id)
-        except:
-            db.close_old_connections()
             locs=Locator.objects.get(url_id=url_id)
         except ObjectDoesNotExist:
             locs=Locator()

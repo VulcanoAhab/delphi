@@ -1,6 +1,7 @@
 import collections
 import copy
 import tempfile
+import time
 from lxml import html
 from lxml import etree
 from urllib.parse import urlparse
@@ -293,7 +294,11 @@ class Pythoness:
             for field_name, values in dict_item.items():
                 for value in values:
                     if not value:continue
-                    self._save_field(field_name, value, element_index, page)
+                    try:
+                        self._save_field(field_name, value, element_index, page)
+                    except:
+                        time.sleep(0.001)
+                        self._save_field(field_name, value, element_index, page)
 
     # --- save data  helpers
     def _build_urllocators_objs(self, url):

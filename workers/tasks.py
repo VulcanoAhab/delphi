@@ -109,7 +109,7 @@ def task_manager(job_id, job_name):
             time.sleep(30*ask_til_three)
             continue
 
-        for task in tasks:
+        for n,task in enumerate(tasks):
             if not task:continue
             print('[+] Sending task [{0}] to queue'.format(task.target_url))
 
@@ -120,6 +120,8 @@ def task_manager(job_id, job_name):
             #update values
             ask_til_three=0
             time.sleep(0.01)
+            if n % 100 ==0:
+                time.sleep(30)
 
     print('[+] Done all tasks for job [{0}]'.format(job_name))
 

@@ -14,6 +14,7 @@ from proxy.utils.proxy import MobProxy
 
 #django db
 from django.db.utils import OperationalError, InterfaceError
+from django import db
 ### ----- (1) helpers ----- ###
 
 
@@ -89,11 +90,12 @@ def task_run(task_id):
     time_used=time.time()-init_time
     print('[+] Process took: [{0:.2f}] seconds'.format(time_used))
 
-    #status task done
+    #status task done -- all this for a thread issue -- improving
     try:
         task.status=status
         task.save()
     except (OperationalError, InterfaceError):
+        db.close_connection()
         task=Task.objects.get(pk=task_id)
         task.status=status
         task.save()

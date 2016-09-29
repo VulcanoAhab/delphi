@@ -294,11 +294,8 @@ class Pythoness:
             for field_name, values in dict_item.items():
                 for value in values:
                     if not value:continue
-                    try:
-                        self._save_field(field_name, value, element_index, page)
-                    except:
-                        time.sleep(0.001)
-                        self._save_field(field_name, value, element_index, page)
+                    self._save_field(field_name, value, element_index, page)
+                    time.sleep(0.001)
 
     # --- save data  helpers
     def _build_urllocators_objs(self, url):

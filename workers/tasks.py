@@ -94,7 +94,7 @@ def task_run(task_id):
     try:
         task.status=status
         task.save()
-    except (OperationalError, InterfaceError):
+    except:
         db.close_connection()
         task=Task.objects.get(pk=task_id)
         task.status=status

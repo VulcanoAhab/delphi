@@ -13,6 +13,7 @@ from selenium.webdriver.common.by import By
 #django
 from django.core.files import File
 from django.core.exceptions import ObjectDoesNotExist
+from django.db
 
 #db models
 from urlocators.models import Page, Locator, make_url_id
@@ -35,6 +36,9 @@ class Helpers:
             raise Exception('[-] Job is required to save page source')
         #build url relations
         try:
+            locs=Locator.objects.get(url_id=url_id)
+        except:
+            db.close_old_connections()
             locs=Locator.objects.get(url_id=url_id)
         except ObjectDoesNotExist:
             locs=Locator()

@@ -25,7 +25,7 @@ class Locator(models.Model):
     '''
     '''
 
-    url=models.URLField(max_length=1000)
+    url=models.URLField(max_length=2000)
     url_id=models.CharField(max_length=150, unique=True)
     uround=models.IntegerField(default=-1)
     created_at=models.DateTimeField(auto_now_add=True)

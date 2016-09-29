@@ -71,8 +71,6 @@ def task_run(task_id):
         if mapper:
             process.mapping(mapper)
         elif sequence:
-            #indexed_seq=sequence.indexed_grabbers.all().order_by('sequence_index')
-            #process.set_sequence(indexed_seq)
             process.set_sequence(sequence)
         else:
             raise Exception('Must set mapper or sequence')
@@ -94,14 +92,8 @@ def task_run(task_id):
     print('[+] Process took: [{0:.2f}] seconds'.format(time_used))
 
     #status task done -- all this for a thread issue -- improving
-    try:
-        task.status=status
-        task.save()
-    except:
-        db.close_old_connections()
-        task=Task.objects.get(pk=task_id)
-        task.status=status
-        task.save()
+    task.status=status
+    task.save()
     return
 
 ## ------ task manager :: provisory manager, starts tasks per job -- as pipe

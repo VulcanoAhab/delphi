@@ -13,7 +13,6 @@ from selenium.webdriver.common.by import By
 #django
 from django.core.files import File
 from django.core.exceptions import ObjectDoesNotExist
-from django import db
 
 #db models
 from urlocators.models import Page, Locator, make_url_id
@@ -27,7 +26,6 @@ class Helpers:
     def save_page_source(url, source, **kwargs):
         '''
         '''
-        db.close_old_connections()
         #set url id
         url_id=make_url_id(url)
         #get job

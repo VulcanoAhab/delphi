@@ -13,7 +13,7 @@ from selenium.webdriver.common.by import By
 #django
 from django.core.files import File
 from django.core.exceptions import ObjectDoesNotExist
-from django.db
+from django import db
 
 #db models
 from urlocators.models import Page, Locator, make_url_id

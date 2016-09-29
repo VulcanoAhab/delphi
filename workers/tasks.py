@@ -13,7 +13,7 @@ from grabbers.utils.processors import ProcessSequence
 from proxy.utils.proxy import MobProxy
 
 #django db
-from django.db.utils import OperationalError
+from django.db.utils import OperationalError, InterfaceError
 ### ----- (1) helpers ----- ###
 
 
@@ -87,7 +87,7 @@ def task_run(task_id):
     try:
         task.status=status
         task.save()
-    except OperationalError:
+    except (OperationalError, InterfaceError):
         task=Task.objects.get(pk=task_id)
         task.status=status
         task.save()

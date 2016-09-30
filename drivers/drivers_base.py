@@ -122,7 +122,7 @@ class BaseSeleniumBrowser:
         url=self.browser.current_url
         return Helpers.save_page_source(url, source, **kwargs)
 
-    def back(self, job,  **kwargs):
+    def back(self, **kwargs):
         '''
         '''
         self.browser.back()

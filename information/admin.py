@@ -8,7 +8,7 @@ class PageAdmin(admin.ModelAdmin):
     list_display=['field_name', 'page_url', 'data', 'element_index']
     list_filter=['field_name','page__job']
     search_fields=['page__addr__url', 'field_value']
-    readonly_fields=['page', 'field_name', 'field_value', 'control_key', 'element_index']
+    readonly_fields=['page', 'field_name', 'field_value', 'control_key', 'element_index', 'task', 'job']
 
     sort=['element_index']
 

@@ -56,8 +56,7 @@ class Helpers:
             fp.close()
             #close temp file
         print('[+] Done saving page [{}]'.format(url[:150]))
-        if ('return_page' in kwargs
-            and kwargs['return_page']):
+        if ('return_page' in kwargs and kwargs['return_page']):
             return page
 
 #===========================================================#
@@ -120,6 +119,8 @@ class BaseSeleniumBrowser:
         '''
         source=self.browser.page_source
         url=self.browser.current_url
+        if 'target_url' in kwargs:
+            url=kwargs['target_url']
         return Helpers.save_page_source(url, source, **kwargs)
 
     def back(self, **kwargs):
@@ -207,6 +208,8 @@ class BaseRequests:
         '''
         source=self.browser['source']
         url=self.browser['url']
+        if 'target_url' in kwargs:
+            url=kwargs['target_url']
         Helpers.save_page_source(url, source, **kwargs)
 
     def back(self, **kwargs):

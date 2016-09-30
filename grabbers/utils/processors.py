@@ -9,6 +9,7 @@ class ProcessSequence:
         self._job=None
         self._task=None
         self._sequence=None
+        self._target_url=None
         self._sequence_maps={
             'size':1,
             'rects':[]
@@ -25,6 +26,11 @@ class ProcessSequence:
         '''
         self._task=task
 
+    def set_target_url(self, url):
+        '''
+        '''
+        self._target_url=url
+
     def set_browser(self, browser):
         '''
         '''
@@ -39,7 +45,7 @@ class ProcessSequence:
         '''
         '''
         if not mapper:return
-        self._browser.page_source(job=self._job)
+        self._browser.page_source(job=self._job, target_url=self._target_url)
         ps=Pythoness()
         ps._job=self._job
         ps.map_targets(mapper, self._browser)
@@ -49,7 +55,7 @@ class ProcessSequence:
         '''
         '''
         #always save page source before sequence
-        self._browser.page_source(job=self._job)
+        self._browser.page_source(job=self._job, target_url=self._target_url)
         iseq=self._sequence.indexed_grabbers.all().order_by('sequence_index')
         #start grabbers sequence
         for indexed_grabber in iseq:

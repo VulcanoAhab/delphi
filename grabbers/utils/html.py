@@ -266,7 +266,6 @@ class Pythoness:
             page_action=self._conf['page_action']
             action_data={}
             #legacy - now is required
-            if page_action == 'page_source':return
             if page_action == 'get_header_field':
                 if browser_name != 'LeanRequests':
                     raise TypeError('[-] Only Lean Requests has get header field')

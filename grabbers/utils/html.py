@@ -203,8 +203,8 @@ class Pythoness:
             return
         #create mapper tasks
         current_url = urlparse(browser.current_url)
-        #--save page source
-        page=browser.get_page_source()
+        #-- build page obj
+        page=self._build_urllocators_objs(current_url)
         urls=[]
         for element in data:
             element_index=element['index']
@@ -283,10 +283,12 @@ class Pythoness:
                                           action_data=action_data)
 
 
-    def save_data(self, browser):
+    def save_data(self, browser, target_url=None):
         '''
         '''
-        url=browser.current_url
+        url=target_url
+        if not url:
+            url=browser.current_url
         page=self._build_urllocators_objs(url)
         for dict_item in self._data['page_data']:
             element_index = dict_item.pop('index')

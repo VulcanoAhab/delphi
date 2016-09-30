@@ -45,7 +45,7 @@ class ProcessSequence:
         '''
         '''
         if not mapper:return
-        self._browser.page_source(job=self._job, target_url=self._target_url)
+        self._browser.page_source(job=self._job)
         ps=Pythoness()
         ps._job=self._job
         ps.map_targets(mapper, self._browser)
@@ -65,7 +65,7 @@ class ProcessSequence:
             ps.set_task(self._task)
             ps.set_grabber(indexed_grabber.grabber)
             ps.session(self._browser, element_index=index)
-            ps.save_data(self._browser)
+            ps.save_data(self._browser, target_url=self._target_url)
 
     def run(self):
         '''

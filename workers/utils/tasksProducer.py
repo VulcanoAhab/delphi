@@ -265,3 +265,38 @@ class ResultsTasks:
         print('[+] Done building tasks...')
 
 
+
+
+#====================================================== build from old job
+class TasksFromJob:
+    '''
+    '''
+    cls._new=None
+    cls._old=None
+
+    @classmethod
+    def old_job_id(cls, job):
+        '''
+        '''
+        cls._old=job
+
+    @classmethod
+    def new_job_name(cls, new_job_name):
+        '''
+        '''
+        cls._new=new_job_name
+
+    @classmethod
+    def build_tasks(cls):
+        '''
+        '''
+        _job=Job.objects.get_or_create(name=cls._new)
+        _tasks=Task.objects.filter(job=cls._old)
+        for task in _tasks:
+            new_task=Task()
+            new_task.target_url=task.target_url
+            new_task.config=task.config
+            new_task.status='created'
+            new_task.job=_job
+            new_task.save()
+        print('[+] Done building tasks for job [{}]'.format(cls._new))

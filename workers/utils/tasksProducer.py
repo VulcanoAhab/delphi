@@ -271,8 +271,8 @@ class ResultsTasks:
 class TasksFromJob:
     '''
     '''
-    cls._new=None
-    cls._old=None
+    _new=None
+    _old=None
 
     @classmethod
     def old_job_id(cls, job):

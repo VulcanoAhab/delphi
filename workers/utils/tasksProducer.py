@@ -290,7 +290,7 @@ class TasksFromJob:
     def build_tasks(cls):
         '''
         '''
-        _job=Job.objects.get_or_create(name=cls._new)
+        _job,created=Job.objects.get_or_create(name=cls._new)
         _tasks=Task.objects.filter(job=cls._old)
         for task in _tasks:
             new_task=Task()

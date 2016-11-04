@@ -37,7 +37,7 @@ class ElementAction(models.Model):
         ('click','click'),
     ]
     type=models.CharField(max_length=50, choices=_dos, default='click', unique=True)
-    index=models.IntegerField(default=0)
+    index=models.IntegerField(default=0) #legacy
 
     def __str__(self):
         '''
@@ -152,6 +152,3 @@ class Sequence(models.Model):
         '''
         '''
         return self.name
-
-
-

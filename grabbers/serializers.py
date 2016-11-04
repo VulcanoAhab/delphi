@@ -4,7 +4,10 @@ from grabbers.models import (Target,
                              ElementAction,
                              PageAction,
                              PostElementAction,
-                             Grabber)
+                             Grabber,
+                             Mapper,
+                             IndexedGrabber,
+                             Sequence)
 from rest_framework.renderers import JSONRenderer
 
 # == Serializers Models ==
@@ -20,7 +23,7 @@ class ExtractorSerializer(serializers.ModelSerializer):
     '''
     class Meta:
         model=Extractor
-        fields=('type')
+        fields=('type',)
 
 
 class ElementActionSerializer(serializers.ModelSerializer):
@@ -37,24 +40,40 @@ class PageActionSerializer(serializers.ModelSerializer):
         model=PageAction
         fiels=('type','index')
 
+class GrabberSerializer(serializers.ModelSerializer):
+    target=TargetSerializer(read_only=True)
+    extractors=ExtractorSerializer(many=True, read_only=True)
+    element_action=ElementActionSerializer(read_only=True)
+    page_action=PageActionSerializer(read_only=True)
+    class Meta:
+        model=Grabber
+        fields=('name','extractors', 'element_action',
+                'page_action', 'target', 'post_action',
+                'created_at', 'last_modified')
+
 class PostElementActionSerializer(serializers.ModelSerializer):
     grabber=GrabberSerializer(read_only=True)
     class Meta:
         model=PostElementAction
         fields=('name','grabber')
 
-
-class GrabberSerializer(serializers.ModelSerializer):
-    target=TargetSerializer(read_only=True)
-    extractors=ExtractorSerializer(many=True, read_only=True)
-    element_action=ElementActionSerializer(read_only=True)
-    page_action=PageActionSerializer(read_only=True)
-    post_action=PostElementActionSerializer(read_only=True)
+class MapperSerializer(serializers.ModelSerializer):
+    '''
+    '''
     class Meta:
-        model=Grabber
-        fields=('name','extractors', 'element_action',
-                'page_action', 'target', 'post_action',
-                'created_at', 'last_modified')
+        model=Mapper
+        fields=('name','field_name', 'field_selector', )
+
+
+class IndexedGrabberSerializer(serializer.ModelSerializer):
+    '''
+    '''
+    pass
+
+class SequenceSerializer(serializer.ModelSerializer):
+    '''
+    '''
+    pass
 
 
 # == helper classes ==
@@ -93,7 +112,7 @@ class Helper:
             serializerClass=cls._registered[model_name]
         except KeyError:
             msg='[-] Fail to find serializer'\
-                 'for model: [{}]'.format(model_name))
+                 'for model: [{}]'.format(model_name)
             print(msg)
             return b'{"error":"serializer fail"}'
         serialized=serializerClass(dbObj)
@@ -104,6 +123,6 @@ Helper.register_serializer(
     extractor=ExtractorSerializer,
     elementaction=ElementActionSerializer,
     pageaction=PageActionSerializer,
-    postelementaction=PostElementActionSerializer,
-    grabber=GrabberSerializer
+    grabber=GrabberSerializer,
+    postelementaction=PostElementActionSerializer
     )

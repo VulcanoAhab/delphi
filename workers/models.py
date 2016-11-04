@@ -73,6 +73,3 @@ class TaskProducer(models.Model):
         '''
         '''
         return 'jobMapper:[{}]'.format(self.job.name)
-
-
-

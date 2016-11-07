@@ -68,12 +68,18 @@ class MapperSerializer(serializers.ModelSerializer):
 class IndexedGrabberSerializer(serializer.ModelSerializer):
     '''
     '''
-    pass
+    grabber=GrabberSerializer(read_only=True)
+    class Meta:
+        model=IndexedGrabber
+        fields=('grabber', 'sequence_index')
 
 class SequenceSerializer(serializer.ModelSerializer):
     '''
     '''
-    pass
+    indexed_grabbers=IndexedGrabberSerializer(read_only=True)
+    class Meta:
+        model=Sequence
+        fields=('indexed_grabbers', 'name')
 
 
 # == helper classes ==

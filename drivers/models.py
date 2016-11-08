@@ -8,7 +8,7 @@ class Header(models.Model):
     field_name=models.CharField(max_length=50)
     field_value=models.CharField(max_length=500)
     header_name=models.CharField(max_length=150)
-    
+
     def __str__(self):
         '''
         '''
@@ -17,17 +17,17 @@ class Header(models.Model):
                                 field=self.field_name
                                         )
 
-class Cookie(models.Model):
-    '''
-    '''
-    field_name=models.CharField(max_length=50)
-    field_value=models.CharField(max_length=500)
-    cookie_name=models.CharField(max_length=50)
-    
-    def __str__(self):
-        '''
-        '''
-        return self.cookie_name
+# class Cookie(models.Model):
+#     '''
+#     '''
+#     field_name=models.CharField(max_length=50)
+#     field_value=models.CharField(max_length=500)
+#     cookie_name=models.CharField(max_length=50)
+#
+#     def __str__(self):
+#         '''
+#         '''
+#         return self.cookie_name
 
 
 class Driver(models.Model):
@@ -37,12 +37,11 @@ class Driver(models.Model):
     name=models.CharField(max_length=250)
     type=models.CharField(max_length=50, choices=_doices)
     headers=models.ManyToManyField('drivers.Header', blank=True)
-    cookies=models.ManyToManyField('drivers.Cookie', blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
     last_modified=models.DateTimeField(auto_now=True)
+    # cookies=models.ManyToManyField('drivers.Cookie', blank=True)
 
     def __str__(self):
         '''
         '''
         return self.name
-

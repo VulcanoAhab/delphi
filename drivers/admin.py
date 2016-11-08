@@ -1,5 +1,5 @@
 from django.contrib import admin
-from drivers.models import Driver, Header, Cookie
+from drivers.models import Driver, Header
 # Register your models here.
 
 
@@ -16,4 +16,4 @@ class HeaderAdmin(admin.ModelAdmin):
 
 admin.site.register(Driver, DriverAdmin)
 admin.site.register(Header, HeaderAdmin)
-admin.site.register(Cookie)
+# admin.site.register(Cookie)

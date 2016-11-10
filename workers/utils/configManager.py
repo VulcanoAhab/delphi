@@ -1,4 +1,6 @@
 from rest_framework.renderers import JSONRenderer
+import json
+from rest_framework.parsers import JSONParser
 
 from grabbers.serializers import (  TargetSerializer,
                                     ExtractorSerializer,
@@ -40,7 +42,7 @@ class Renderer:
         '''
         obj
         ---
-        parser grabber element wise to json
+        parse grabbers and workers element wise to json
 
         return
         ------
@@ -56,6 +58,30 @@ class Renderer:
             return b'{"error":"serializer fail"}'
         serialized=serializerClass(dbObj)
         return JSONRenderer().render(serialized.data)
+
+    @classmethod
+    def toModel(cls, jsonObj, dbType):
+        '''
+        obj
+        ---
+        parse json grabbers and workers element to ModelObj
+
+        return
+        ------
+        model instance
+        '''
+        model_name=dbType.lower()
+        try:
+            serializerClass=cls._registered[model_name]
+        except KeyError:
+            msg='[-] Fail to find serializer'\
+                 'for model: [{}]'.format(model_name)
+            print(msg)
+            return b'{"error":"serializer fail"}'
+        stream=json.dumps(jsonObj).encode()
+        data=JSONParser().parse(stream)
+        modelis=serializerClass(data)
+        return modelis
 
 
 Renderer.register_serializer(

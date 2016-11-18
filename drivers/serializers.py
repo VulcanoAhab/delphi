@@ -12,6 +12,8 @@ class DriverSerializer(serializers.ModelSerializer):
     '''
     '''
     headers=HeaderSerializer(many=True)
+    name=serializers.CharField(max_length=250)
+
     class Meta:
         model=Driver
         fields=('name', 'type', 'headers')

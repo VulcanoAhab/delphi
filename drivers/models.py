@@ -34,7 +34,7 @@ class Driver(models.Model):
     '''
     '''
     _doices=[(dc,dc) for dc in DriverChoices.get_all()]
-    name=models.CharField(max_length=250)
+    name=models.CharField(max_length=250, unique=True)
     type=models.CharField(max_length=50, choices=_doices)
     headers=models.ManyToManyField('drivers.Header', blank=True)
     created_at=models.DateTimeField(auto_now_add=True)

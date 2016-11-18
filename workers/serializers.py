@@ -5,6 +5,9 @@ from workers.models import (TaskConfig,
                             TaskProducer)
 from grabbers.serializers import MapperSerializer, SequenceSerializer
 from drivers.serializers import DriverSerializer
+from drivers.models import Driver
+
+from django.core.exceptions import ObjectDoesNotExist
 
 class TaskConfigSerializer(serializers.ModelSerializer):
     '''
@@ -15,6 +18,18 @@ class TaskConfigSerializer(serializers.ModelSerializer):
         model=TaskConfig
         #no proxy by api yet - missing fields::proxy,network_cap
         fields=('name','driver','sequence','mapper','round_limit')
+
+    def save(self):
+        '''
+        '''
+        data=self.validated_data
+
+        try:
+            driver=Driver.objects.get(name=data['driver']['name'])
+        except ObjectDoesNotExist:
+            driverSe=DriverSerializer(data=data['driver'])
+
+
 
 
 class JobSerializer(serializers.ModelSerializer):

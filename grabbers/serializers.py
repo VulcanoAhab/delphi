@@ -1,3 +1,4 @@
+from collections import namedtuple
 from rest_framework import serializers
 from grabbers.models import (Target,
                              Extractor,
@@ -54,9 +55,11 @@ class PageActionSerializer(serializers.ModelSerializer):
         model=PageAction
         fiels=('type','index')
 
+
+
 class GrabberSerializer(serializers.ModelSerializer):
     '''
-    post_action not available through serializer
+    post_action not available (yet) through serializer
     '''
     target=TargetSerializer(allow_null=True,required=False)
     extractors=ExtractorSerializer(allow_null=True,required=False)
@@ -120,6 +123,8 @@ class GrabberSerializer(serializers.ModelSerializer):
                 setattr(grabber, k, v)
             grabber.save()
 
+        return grabber
+
 class PostElementActionSerializer(serializers.ModelSerializer):
     grabber=GrabberSerializer()
     class Meta:
@@ -149,3 +154,32 @@ class SequenceSerializer(serializers.ModelSerializer):
     class Meta:
         model=Sequence
         fields=('indexed_grabbers', 'name')
+
+    def save(self):
+        '''
+        '''
+        name=self.validated_data['name']
+        sequence,created=Sequence.objects.get_or_create(name=name)
+        if not created:return
+
+        for indexed_grabber in self.validated_data['indexed_grabbers']:
+
+            grabis_index=indexed_grabber['sequence_index']
+            grabis_name=indexed_grabber['grabber']['name']
+
+            if IndexedGrabber.objects.filter(
+                sequence_index=grabis_index,
+                grabber=grabis_name).exists():continue
+
+            grabber=Grabber.objects.filter(name=grabis_name).first()
+            if not grabber:
+                grabis=GrabberSerializer(data=indexed_grabber['grabber'])
+                if not grabis.is_valid():
+                    msg='[-] Fail top parse grabber {}'.format(grabis_name)
+                    raise TypeError(msg)
+                grabber=grabis.save()
+
+            indexGrabbis=IndexedGrabber(sequence_index=grabis_index,
+                                        grabber=grabber)
+            indexGrabbis.save()
+            sequence.indexed_grabbers.add(indexGrabbis)

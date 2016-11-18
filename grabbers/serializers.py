@@ -19,16 +19,14 @@ class TargetSerializer(serializers.ModelSerializer):
     class Meta:
         model=Target
         fields=('field_name', 'field_selector', 'selector_type')
-        #extra_kwargs = {'field_name': {'unique': False}}
 
     def save(self):
         '''
         '''
-        field_name=self.validated_data['field_name']
+        field_name=self.self.validated_data.pop('field_name')
         target,created=Target.objects.get_or_create(field_name=field_name)
         if created:
             for k,v in self.validated_data.items():
-                if k == 'field_name':continue
                 setattr(target,k,v)
             target.save()
 
@@ -57,8 +55,11 @@ class PageActionSerializer(serializers.ModelSerializer):
         fiels=('type','index')
 
 class GrabberSerializer(serializers.ModelSerializer):
-    target=TargetSerializer()
-    extractors=ExtractorSerializer(many=True)
+    '''
+    post_action not available through serializer
+    '''
+    target=TargetSerializer(allow_null=True,required=False)
+    extractors=ExtractorSerializer(allow_null=True,required=False)
     element_action=ElementActionSerializer(allow_null=True, required=False)
     page_action=PageActionSerializer(allow_null=True, required=False)
     name=serializers.CharField(max_length=250)
@@ -66,26 +67,58 @@ class GrabberSerializer(serializers.ModelSerializer):
     class Meta:
         model=Grabber
         fields=('name','extractors', 'element_action',
-                'page_action', 'target', 'post_action',
+                'page_action', 'target',
                 'created_at', 'last_modified')
+
 
     def save(self):
         '''
         '''
-        name=self.validated_data['name']
-        target,created=Target.objects.get_or_create(name=name)
-        if created:
-            for k,v in self.validated_data.items():
-                if k == 'name':continue
-                setattr(target,k,v)
-            target.save()
+        _fields={
+            'element_action':None,
+            'page_action':None,
+            'extractors':None,
+            'target':None,
+                }
+        #build related objects
+        try:
+            grab_name=self.validated_data.pop('name')
+        except KeyError as key:
+            msg='[-] The {} field is required'.format(key)
+            print(msg)
+            raise Exception(msg)
 
-    def create(self):
-        '''
-        '''
-        extractors=self.validated_data.pop('extractors')
-        extractorsObj=Extractor.get_or_create(type=extractors['type'])
+        if self.validated_data.get('extractors'):
+            extype=self.validated_data['extractors']['type']
+            (_fields['extractors'],
+            created)=Extractor.objects.get_or_create(type=extype)
 
+        if self.validated_data.get('target'):
+            tar_name=self.validated_data['target']['field_name']
+            (_fields['target'],
+            created)=Target.objects.get_or_create(field_name=tar_name)
+            if created:
+                _fields['target'].field_selector=target['field_selector']
+                _fields['target'].selector_type=target['selector_type']
+                _fields['target'].save(commit=False)
+
+        if self.validated_data.get('element_action'):
+            el=self.self.validated_data['element_action']['type']
+            (_fields['element_action'],
+            created)=ElementAction.objetcs.get_or_create(type=el)
+
+        if self.validated_data.get('page_action'):
+            pa=self.self.validated_data['page_action']['type']
+            (_fields['page_action'],
+            created)=PageAction.objects.get_or_create(type=pa)
+
+        grabber, grab_created=Grabber.objects.get_or_create(name=grab_name)
+
+        if grab_created:
+            for k,v in _fields.items():
+                if not v:continue
+                setattr(grabber, k, v)
+            grabber.save()
 
 class PostElementActionSerializer(serializers.ModelSerializer):
     grabber=GrabberSerializer()

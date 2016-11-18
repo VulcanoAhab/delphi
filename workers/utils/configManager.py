@@ -78,9 +78,7 @@ class Renderer:
                  'for model: [{}]'.format(model_name)
             print(msg)
             return b'{"error":"serializer fail"}'
-        stream=json.dumps(jsonObj).encode()
-        data=JSONParser().parse(stream)
-        modelis=serializerClass(data)
+        modelis=serializerClass(data=jsonObj)
         return modelis
 
 

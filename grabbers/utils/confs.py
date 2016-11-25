@@ -29,7 +29,7 @@ class GrabberConf:
             tempDict['selector_type']=target_selector_type
             work_dict['target']=tempDict
         if grabberObj.extractors and grabberObj.extractors.all().count():
-	    extis = grabberObj.extractors.all()
+            extis = grabberObj.extractors.all()
             work_dict['extractors']=[e.type for e in extis]
         if grabberObj.element_action:
             work_dict['element_action']=grabberObj.element_action.type

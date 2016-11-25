@@ -14,8 +14,13 @@ class SeleniumPhantom(BaseSeleniumBrowser):
         '''
         '''
         base='phantomjs.page.customHeaders.'
+        user_base='phantomjs.page.settings.userAgent'
+        self._driver.DesiredCapabilities.PHANTOMJS={}
         for k,v in kwargs.items():
-            k=''.join([base, k])
+            if k == 'User-Agent':
+                k=user_base
+            else:
+                k=''.join([base, k])
             self._driver.DesiredCapabilities.PHANTOMJS[k]=v
 
     def load_confs(self, confObject):

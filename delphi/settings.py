@@ -48,6 +48,7 @@ INSTALLED_APPS = (
     'proxy',
 
     'celery',
+    'rest_framework'
 )
 
 
@@ -108,4 +109,3 @@ MEDIA_URL='/media/'
 SUIT_CONFIG = {
     'ADMIN_NAME': 'Delphi Admin'
         }
-

@@ -20,9 +20,10 @@ from django.views.static import serve
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^api/0/', include('rest_framework.urls', namespace='rest_framework'),
 ]
 
-#serving static - as a devel server 
+#serving static - as a devel server
 static_url=url(r'^static\/(?P<path>.*)$', serve,{'document_root': settings.STATIC_ROOT})
 urlpatterns.append(static_url)
 
@@ -30,4 +31,3 @@ urlpatterns.append(static_url)
 handler404='workers.views.sayError'
 handler403='workers.views.sayError'
 handler500='workers.views.sayError'
-

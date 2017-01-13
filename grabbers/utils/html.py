@@ -347,5 +347,4 @@ class Pythoness:
     def save_proxy_data(browser):
         '''
         '''
-        print('Called ----------- save proxy data')
         print(browser.get_proxy_data())

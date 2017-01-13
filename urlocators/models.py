@@ -5,7 +5,7 @@ import urllib.parse as uparse
 
 # Create your models here.
 
-### --- helpers ----
+### --- helpers ---- deprecated --
 def site_directory_path(instance, filename):
     job_name=instance.job.name
     return '{job_name}/htmls/{uid}.html'.format(
@@ -57,7 +57,7 @@ class Page(models.Model):
     '''
     created_at=models.DateTimeField(auto_now_add=True)
     modified_at=models.DateTimeField(auto_now=True)
-    html=models.FileField(upload_to=site_directory_path, null=True, blank=True)
+    html=models.TextField()
     addr=models.ForeignKey('urlocators.Locator')
     job=models.ForeignKey('workers.Job')
 

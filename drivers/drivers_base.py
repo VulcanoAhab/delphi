@@ -47,17 +47,16 @@ class Helpers:
             #build html file
             page.job=job
             page.addr=locs
-            fp=tempfile.TemporaryFile()
-            fp.write(source.encode())
-            fp.seek(0)
-            file_html=File(fp)
-            page.html=file_html
+            #fp=tempfile.TemporaryFile()
+            #fp.write(source.encode())
+            #fp.seek(0)
+            #file_html=File(fp)
+            page.html=source
             page.save()
-            fp.close()
+            #fp.close()
             #close temp file
         print('[+] Done saving page [{}]'.format(url[:150]))
-        if ('return_page' in kwargs and kwargs['return_page']):
-            return page
+        if ('return_page' in kwargs):return page
 
 #===========================================================#
 #==================== Drivers base classes =================#

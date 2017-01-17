@@ -109,3 +109,11 @@ MEDIA_URL='/media/'
 SUIT_CONFIG = {
     'ADMIN_NAME': 'Delphi Admin'
         }
+
+# CELERY_BEAT_SCHEDULE={
+#     'add-every-05-seconds': {
+#         'task': 'workers.tasks.job_starter',
+#         'schedule': 5.0,
+#         'args': (2)
+#     },
+# }

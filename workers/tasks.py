@@ -5,7 +5,7 @@ import psutil
 from workers.models import Job
 from delphi.celery import app
 from drivers import browsers
-from workers.models import Job, Task
+from workers.models import Job, Task, RunControl
 from workers.utils.commons import build_control_key
 from grabbers.utils.processors import ProcessSequence
 
@@ -15,16 +15,12 @@ from proxy.utils.proxy import MobProxy
 #django db
 from django.db.utils import OperationalError, InterfaceError
 from django import db
-### ----- (1) helpers ----- ###
 
+#celery
+from celery.task.schedules import crontab
+from celery.decorators import periodic_task
 
-
-
-
-### ----- (2) power horses ----- ###
-
-## ------ action - task : get, grab and save
-
+### ----- (1) tasks ----- ###
 @app.task
 def task_run(task_id):
     '''
@@ -36,13 +32,13 @@ def task_run(task_id):
     init_time=time.time()
 
     #get task, set to running
-    task=Task.objects.get(pk=task_id)
-    task.status='running'
-    task.save()
+    task_in=Task.objects.get(pk=task_id)
+    task_in.status='running'
+    task_in.save()
 
     #must have
-    job=task.job
-    if not task.config.sequence and not task.config.mapper:
+    job=task_in.job
+    if not task_in.config.sequence and not task_in.config.mapper:
         print('[+] Sequence or mapper must be set')
         return
 
@@ -51,14 +47,14 @@ def task_run(task_id):
     url=task.target_url
     round_number=task.round_number
     control_key=build_control_key(url, job.id)
-    mapper=task.config.mapper
-    sequence=task.config.sequence
+    mapper=task_in.config.mapper
+    sequence=task_in.config.sequence
     try:
         #proxy
         MobProxy.connect(task)
         proxy_port=MobProxy.port()
         #build driver
-        wd=getattr(browsers, task.config.driver.type)()
+        wd=getattr(browsers, task_in.config.driver.type)()
         wd.load_confs(task.config)
         wd.build_driver(proxy_port)
         print('[+] Starting GET request [{}]'.format(url))
@@ -66,7 +62,7 @@ def task_run(task_id):
         #process get
         process=ProcessSequence()
         process.set_job(job)
-        process.set_task(task)
+        process.set_task(task_in)
         process.set_target_url(url)
         process.set_browser(wd)
         if mapper:
@@ -78,9 +74,12 @@ def task_run(task_id):
         process.run()
         MobProxy.save_data()
         status='done'
+        job.tasks_done_count+=1
+        job.save()
     except Exception:
         traceback.print_exc()
         status='fail'
+
 
     if wd:
         try:
@@ -93,59 +92,55 @@ def task_run(task_id):
     print('[+] Process took: [{0:.2f}] seconds'.format(time_used))
 
     #status task done -- all this for a thread issue -- improving
-    task.status=status
-    task.save()
+    task_in.status=status
+    task_in.save()
     return
 
-## ------ task manager :: provisory manager, starts tasks per job -- as pipe
-
-@app.task
-def task_manager(job_id, job_name):
+### ----- (2) jobs ----- ###
+@periodic_task(run_every=(crontab(minute="*/5")))
+def jobs_run():
     '''
     '''
-    #set vars
-    ask_til_three=0
-    #wait for task to be saved - just in case
-    time.sleep(1)
-    #task loop -- need to improve job control soon
-    #need to be more intelligent -- maybe as periodic
+    tasks_ceiling=150
+    run_control=RunControl()
     while True:
-
-        tasks = Task.objects.filter(job__id=job_id, status='created')
-
-        if not tasks.count():
-            ask_til_three+=1
-            if ask_til_three > 3:break
-            print('[-] No task for job [{0}]'.format(job_name))
-            time.sleep(30*ask_til_three)
-            continue
-
-        for n,task in enumerate(tasks):
-            if not task:continue
-            print('[+] Sending task [{0}] to queue'.format(task.target_url))
-
-            task.status='in_queue'
-            task.save()
-            task_run.delay(task.id)
-
-            #update values
-            ask_til_three=0
-            time.sleep(0.01)
-            if n % 100 ==0:
-                time.sleep(30)
-
-    print('[+] Done all tasks for job [{0}]'.format(job_name))
-
-
-## ------ task starts job - creates first task - fires task manager
-
-@app.task
-def job_starter(job_id=1):
-    '''
-    '''
-    job=Job.objects.get(pk=job_id)
-    print('[+] Starting job [{}]'.format(job.name))
-    job.status='running'
-    job.save()
-    task_manager.delay(job_id, job.name)
-
+        jobs=Job.objects.filter(status__in=['created', 'running'])
+        jobs_count=jobs.count()
+        if not jobs_count:
+            print('[+] No new jobs and no jobs running')
+            if run_control.ask_count <= 3:
+                time.sleep(30*run_control.run_count)
+                run_control.ask_count+=1
+                continue
+            break
+        #ask renew
+        run_control.ask_count=0
+        #soon will consider tasks duration
+        tasks_limit=1
+        taskal=tasks_ceiling/jobs_count
+        if taskal >  1:
+            tasks_limit=taskal
+        for job in jobs:
+            tasks=Task.objects.filter(job=job, status='created')
+            tasks_count=tasks.count()
+            #new job
+            if job.status=='created':
+                print('[+] Starting job {}.\
+                      Total tasks:'.job.name, tasks_count)
+                job.status='running'
+                job.save()
+            #done job
+            if not tasks_count:
+                if job.done_count >= 2:
+                    job.status='done'
+                    job.save()
+                    print('[+] Job {} is done'.format(job.name))
+                    continue
+                job.done_count+=1
+                job.save()
+                time.sleep(0.01)
+                continue
+            #run task
+            for task in tasks[:tasks_limit]:
+                task_run.delay(task.id)
+                time.sleep(0.01)

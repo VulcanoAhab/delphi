@@ -23,10 +23,11 @@ class TaskInline(admin.StackedInline):
 class JobAdmin(admin.ModelAdmin):
     '''
     '''
-    inlines=[TaskInline,]
+    #inlines=[TaskInline,]
     search_fields=['name']
+    list_display=('id','name','status')
 
-admin.site.register(Job)
+admin.site.register(Job, JobAdmin)
 admin.site.register(TaskConfig, TaskConfigAdmin)
 admin.site.register(Task, TaskAdmin)
 admin.site.register(TaskProducer)

@@ -1,4 +1,6 @@
 from django.db import models
+import uuid
+
 
 # Create your models here.
 
@@ -9,6 +11,7 @@ _status=[
     ('running','running'),
     ('fail','fail'),
     ('to_approve','to_approve'),
+    ('wait', 'wait')
         ]
 
 class TaskConfig(models.Model):
@@ -31,10 +34,12 @@ class Job(models.Model):
     '''
     '''
     status=models.CharField(max_length=50, choices=_status)
-    results_count=models.IntegerField(default=0)
+    tasks_done_count=models.IntegerField(default=0)
     created_at=models.DateTimeField(auto_now_add=True)
     last_modified=models.DateTimeField(auto_now=True)
     name=models.CharField(max_length=150, unique=True)
+    done_count=models.IntegerField(default=0)
+
 
     def __str__(self):
         return 'id:[{}]name:[{}]'.format(self.id, self.name)
@@ -73,3 +78,17 @@ class TaskProducer(models.Model):
         '''
         '''
         return 'jobMapper:[{}]'.format(self.job.name)
+
+class RunControl(models.Model):
+    '''
+    '''
+    id=models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    ask_count=models.IntegerField(default=0)
+    run_count=models.IntegerField(default=0)
+    created_at=models.DateTimeField(auto_now_add=True)
+
+
+    def __srt__(self):
+        '''
+        '''
+        return 'runid:{}'.format(self.id)

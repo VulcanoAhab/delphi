@@ -2,6 +2,7 @@ import time
 import traceback
 import psutil
 
+from datetime import timedelta
 from workers.models import Job
 from delphi.celery import app
 from drivers import browsers
@@ -21,20 +22,23 @@ from celery.task.schedules import crontab
 from celery.decorators import periodic_task
 
 ### ----- (1) tasks ----- ###
-@app.task
-def task_run(task_id):
+@periodic_task(run_every=(timedelta(seconds=10)))
+def task_run():
     '''
     '''
     #one more try
-    db.close_old_connections()
+    #db.close_old_connections()
+
+    #get task, set to running
+    task_in=Task.objects.filter(status='wait').first()
+    if not task_in:
+        print('[+] No tasks in wait')
+        return
+    task_in.status='running'
+    task_in.save()
 
     # start thread
     init_time=time.time()
-
-    #get task, set to running
-    task_in=Task.objects.get(pk=task_id)
-    task_in.status='running'
-    task_in.save()
 
     #must have
     job=task_in.job
@@ -44,18 +48,18 @@ def task_run(task_id):
 
     #loading vars
     wd=None
-    url=task.target_url
-    round_number=task.round_number
+    url=task_in.target_url
+    round_number=task_in.round_number
     control_key=build_control_key(url, job.id)
     mapper=task_in.config.mapper
     sequence=task_in.config.sequence
     try:
         #proxy
-        MobProxy.connect(task)
+        MobProxy.connect(task_in)
         proxy_port=MobProxy.port()
         #build driver
         wd=getattr(browsers, task_in.config.driver.type)()
-        wd.load_confs(task.config)
+        wd.load_confs(task_in.config)
         wd.build_driver(proxy_port)
         print('[+] Starting GET request [{}]'.format(url))
         wd.get(url)
@@ -142,5 +146,6 @@ def jobs_run():
                 continue
             #run task
             for task in tasks[:tasks_limit]:
-                task_run.delay(task.id)
+                task.status='wait'
+                task.save()
                 time.sleep(0.01)

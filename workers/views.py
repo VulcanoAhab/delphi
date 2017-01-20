@@ -1,7 +1,19 @@
 from django.shortcuts import render
-# Create your views here.
+from workers.models import Job,TaskConfig
+from workers.serializers import JobSerializer, TaskConfigSerializer
+from rest_framework import viewsets, generics
+from rest_framework.response import Response
 
-def sayError(request):
-    '''
-    '''
-    return render(request, 'workers/sayError.html', {})
+
+# Create your views here.
+class JobsViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows jobs to be viewed or edited.
+    """
+    queryset = Job.objects.all().order_by('id')
+    serializer_class = JobSerializer
+
+    def retrieve(self, request, pk=None):
+        '''
+        '''
+        pass

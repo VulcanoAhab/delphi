@@ -20,7 +20,7 @@ from django.views.static import serve
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^api/0/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^api/', include('api.urls', namespace='api')),
 ]
 
 #serving static - as a devel server

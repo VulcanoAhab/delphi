@@ -19,15 +19,7 @@ class TaskConfigSerializer(serializers.ModelSerializer):
         #no proxy by api yet - missing fields::proxy,network_cap
         fields=('name','driver','sequence','mapper','round_limit')
 
-    def save(self):
-        '''
-        '''
-        data=self.validated_data
-
-        try:
-            driver=Driver.objects.get(name=data['driver']['name'])
-        except ObjectDoesNotExist:
-            driverSe=DriverSerializer(data=data['driver'])
+    
 
 
 

@@ -113,7 +113,7 @@ class Grabber(models.Model):
     '''
     '''
     name=models.CharField(max_length=250, unique=True)
-    extractors=models.ForeignKey('grabbers.Extractor', blank=True, null=True)
+    extractor=models.ForeignKey('grabbers.Extractor', blank=True, null=True)
     element_action=models.ForeignKey('grabbers.ElementAction', blank=True, null=True)
     page_action=models.ForeignKey('grabbers.PageAction', blank=True, null=True)
     target=models.ForeignKey('grabbers.Target', blank=True, null=True)

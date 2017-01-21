@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from workers.models import Job,TaskConfig
-from workers.serializers import JobSerializer, TaskConfigSerializer
+from workers.models import Job,TaskConfig, Task
+from workers.serializers import JobSerializer, TaskConfigSerializer, TaskSerializer
 from rest_framework import viewsets, generics
 from rest_framework.response import Response
 
@@ -16,4 +16,11 @@ class JobsViewSet(viewsets.ModelViewSet):
     def retrieve(self, request, pk=None):
         '''
         '''
-        pass
+        job=self.get_object()
+        jobse=JobSerializer(job)
+        full_job=jobse.data
+        task_sample=Task.objects.filter(job=job).first()
+        task_config=task_sample.config
+        task_configse=TaskConfigSerializer(task_config)
+        full_job.update(task_configse.data)
+        return Response(full_job)

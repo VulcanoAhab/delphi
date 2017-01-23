@@ -1,14 +1,21 @@
-from django.shortcuts import render
-from workers.models import Job,TaskConfig, Task
-from workers.serializers import JobSerializer, TaskConfigSerializer, TaskSerializer
+from django.shortcuts import render, get_object_or_404
+from workers.models import Job, TaskConfig, Task
+from drivers.models import Driver
+from grabbers.models import Sequence
 from rest_framework import viewsets, generics
 from rest_framework.response import Response
+from workers.serializers import (JobSerializer,
+                                TaskConfigListSerializer,
+                                TaskConfigDetailSerializer,
+                                TaskSerializer,
+                                SequenceSerializer,
+                                DriverSerializer)
 
 
 # Create your views here.
 class JobsViewSet(viewsets.ModelViewSet):
     """
-    endpoint that allows jobs to be viewed or edited.
+    endpoint that allows JOBS to be viewed or edited.
     """
     queryset = Job.objects.all().order_by('id')
     serializer_class = JobSerializer
@@ -25,9 +32,29 @@ class JobsViewSet(viewsets.ModelViewSet):
         full_job.update(task_configse.data)
         return Response(full_job)
 
+class SequenceViewSet(viewsets.ModelViewSet):
+    """
+    endpoint that allows SEQUENCE to be viewed or edited.
+    """
+    queryset = Sequence.objects.all().order_by('id')
+    serializer_class = SequenceSerializer
+
 class TaskConfigsViewSet(viewsets.ModelViewSet):
     """
-    endpoint that allows jobs to be viewed or edited.
+    endpoint that allows TASKCONFIGS to be viewed or edited.
     """
     queryset = TaskConfig.objects.all().order_by('id')
-    serializer_class=TaskConfigSerializer
+    serializer_class = TaskConfigListSerializer
+
+    def retrieve(self, request, pk=None):
+        """
+        """
+        taskconfig = get_object_or_404(TaskConfig, pk=pk)
+        serializer = TaskConfigDetailSerializer(taskconfig)
+        return Response(serializer.data)
+
+class DriverViewSet(viewsets.ModelViewSet):
+    """
+    """
+    queryset=Driver.objects.all()
+    serializer_class=DriverSerializer

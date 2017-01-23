@@ -21,6 +21,7 @@ class DriverSerializer(serializers.ModelSerializer):
     class Meta:
         model=Driver
         fields=('name', 'type', 'headers')
+        extra_kwargs = {'url': {'view_name': 'api:driver-detail'}}
 
     def save(self):
         '''

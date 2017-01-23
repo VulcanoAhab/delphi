@@ -46,6 +46,7 @@ INSTALLED_APPS = (
     'urlocators',
     'information',
     'proxy',
+    'api',
 
     'celery',
     'rest_framework'

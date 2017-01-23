@@ -3,13 +3,17 @@ from workers.models import (TaskConfig,
                             Task,
                             Job,
                             TaskProducer)
-from grabbers.serializers import MapperSerializer, SequenceSerializer
+
+from grabbers.serializers import (MapperSerializer,
+                                  SequenceSerializer)
+
+
 from drivers.serializers import DriverSerializer
 from drivers.models import Driver
 
 from django.core.exceptions import ObjectDoesNotExist
 
-class TaskConfigSerializer(serializers.ModelSerializer):
+class TaskConfigDetailSerializer(serializers.ModelSerializer):
     '''
     '''
     driver=DriverSerializer()
@@ -19,9 +23,17 @@ class TaskConfigSerializer(serializers.ModelSerializer):
         #no proxy by api yet - missing fields::proxy,network_cap
         fields=('name','driver','sequence','mapper','round_limit')
 
-    
-
-
+class TaskConfigListSerializer(serializers.HyperlinkedModelSerializer):
+    '''
+    '''
+    class Meta:
+        model=TaskConfig
+        fields=('url', 'name', 'sequence', 'driver', 'mapper','round_limit')
+        extra_kwargs = {
+            'url': {'view_name': 'api:task_config-detail'},
+            'driver': {'view_name': 'api:driver-detail'},
+            'sequence':{'view_name': 'api:sequence-detail'},
+        }
 
 
 class JobSerializer(serializers.ModelSerializer):
@@ -34,7 +46,7 @@ class JobSerializer(serializers.ModelSerializer):
 class TaskSerializer(serializers.ModelSerializer):
     '''
     '''
-    config=TaskConfigSerializer()
+    config=TaskConfigDetailSerializer()
     job=JobSerializer()
     class Meta:
         model=Task

@@ -202,7 +202,7 @@ class SequenceSerializer(serializers.ModelSerializer):
     indexed_grabbers=IndexedGrabberSerializer(many=True)
     class Meta:
         model=Sequence
-        fields=('indexed_grabbers', 'name')
+        fields='__all__'
 
     def to_representation(self, obj):
         '''
@@ -211,16 +211,19 @@ class SequenceSerializer(serializers.ModelSerializer):
         sequence=Sequence.objects.get(name=name)
         value_fields=['name','element_action','post_action',
                       'created_at', 'last_modified']
-        seqs=[]
+        seqs={}
         for indexed_grabber in obj.indexed_grabbers.all():
             grabber_index=indexed_grabber.sequence_index
             grabber=Grabber.objects.get(id=indexed_grabber.grabber.id)
+            if not grabber:continue
             grabis={field:getattr(grabber, field) for field in  value_fields}
             grabis.update({
-                'extractors':grabber.extractor.type,
+                'extractors':ExtractorSerializer(grabber.extractor).data,
                 'target':TargetSerializer(grabber.target).data,
+                'index':grabber_index,
             })
-            seqs.append({'index':grabber_index, 'grabber':grabis})
+            seqs.update({grabber_index:grabis})
+        #return {'data':seqs}
         return seqs
 
     # def save(self):

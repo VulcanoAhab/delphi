@@ -23,7 +23,31 @@ class Helpers:
     '''
     '''
     @staticmethod
-    def save_page_source(url, source, **kwargs):
+    def _page_to_file_or_db(page, locs, job, page_to):
+        '''
+        '''
+        page=Page()
+        #build html file
+        page.job=job
+        page.addr=locs
+        # ---  options are not impleted on model level yet
+        page_to='db'
+        # ---
+        #persiste
+        if page_to == 'db':
+            page.html=source
+            page.save()
+        elif page_to == 'filesystem':
+            fp=tempfile.TemporaryFile()
+            fp.write(source.encode())
+            fp.seek(0)
+            file_html=File(fp)
+            page.html=source
+            page.save()
+            fp.close()
+
+    @staticmethod
+    def save_page_source(url, source, page_to='db', **kwargs):
         '''
         '''
         #set url id
@@ -43,18 +67,7 @@ class Helpers:
         try:
             page=Page.objects.get(addr=locs.id, job=job)
         except ObjectDoesNotExist:
-            page=Page()
-            #build html file
-            page.job=job
-            page.addr=locs
-            #fp=tempfile.TemporaryFile()
-            #fp.write(source.encode())
-            #fp.seek(0)
-            #file_html=File(fp)
-            page.html=source
-            page.save()
-            #fp.close()
-            #close temp file
+            Helpers._page_to_file_or_db(page, locs, job, page_to)
         print('[+] Done saving page [{}]'.format(url[:150]))
         if ('return_page' in kwargs):return page
 

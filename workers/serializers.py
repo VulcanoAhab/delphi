@@ -33,6 +33,7 @@ class TaskConfigListSerializer(serializers.HyperlinkedModelSerializer):
             'url': {'view_name': 'api:task_config-detail'},
             'driver': {'view_name': 'api:driver-detail'},
             'sequence':{'view_name': 'api:sequence-detail'},
+            'mapper':{'view_name':'api:mapper-detail'},
         }
 
 

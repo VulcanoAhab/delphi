@@ -7,9 +7,7 @@ from rest_framework.response import Response
 from workers.serializers import (JobSerializer,
                                 TaskConfigListSerializer,
                                 TaskConfigDetailSerializer,
-                                TaskSerializer,
-                                SequenceSerializer,
-                                DriverSerializer)
+                                TaskSerializer)
 
 
 # Create your views here.
@@ -32,12 +30,6 @@ class JobsViewSet(viewsets.ModelViewSet):
         full_job.update(task_configse.data)
         return Response(full_job)
 
-class SequenceViewSet(viewsets.ModelViewSet):
-    """
-    endpoint that allows SEQUENCE to be viewed or edited.
-    """
-    queryset = Sequence.objects.all().order_by('id')
-    serializer_class = SequenceSerializer
 
 class TaskConfigsViewSet(viewsets.ModelViewSet):
     """
@@ -52,9 +44,3 @@ class TaskConfigsViewSet(viewsets.ModelViewSet):
         taskconfig = get_object_or_404(TaskConfig, pk=pk)
         serializer = TaskConfigDetailSerializer(taskconfig)
         return Response(serializer.data)
-
-class DriverViewSet(viewsets.ModelViewSet):
-    """
-    """
-    queryset=Driver.objects.all()
-    serializer_class=DriverSerializer

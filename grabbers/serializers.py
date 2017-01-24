@@ -7,8 +7,8 @@ from grabbers.models import (Target,
                              PostElementAction,
                              Grabber,
                              Mapper,
-                             IndexedGrabber,
-                             Sequence)
+                             Sequence,
+                             IndexedGrabber)
 
 
 # == Serializers Models ==

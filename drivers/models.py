@@ -37,8 +37,12 @@ class Driver(models.Model):
     name=models.CharField(max_length=250, unique=True)
     type=models.CharField(max_length=50, choices=_doices)
     headers=models.ManyToManyField('drivers.Header', blank=True)
+    host=models.CharField(max_length=250, blank=True, null=True)
+    port=models.IntegerField(blank=True, null=True)
+    remote_browser_type=models.CharField(max_length=250, blank=True, null=True)
     created_at=models.DateTimeField(auto_now_add=True)
     last_modified=models.DateTimeField(auto_now=True)
+
     # cookies=models.ManyToManyField('drivers.Cookie', blank=True)
 
     def __str__(self):

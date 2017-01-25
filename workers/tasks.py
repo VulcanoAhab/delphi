@@ -60,7 +60,7 @@ def task_run():
         #build driver
         wd=getattr(browsers, task_in.config.driver.type)()
         wd.load_confs(task_in.config)
-        wd.build_driver(proxy_port)
+        wd.build_driver(proxy_port=proxy_port)
         print('[+] Starting GET request [{}]'.format(url))
         wd.get(url)
         #process get
@@ -129,8 +129,8 @@ def jobs_run():
             tasks_count=tasks.count()
             #new job
             if job.status=='created':
-                print('[+] Starting job {}.\
-                      Total tasks:'.job.name, tasks_count)
+                print("[+] Starting job {}.\
+                Total tasks: {}".format(job.name, tasks_count))
                 job.status='running'
                 job.save()
             #done job

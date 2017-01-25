@@ -76,12 +76,11 @@ class Helpers:
 class BaseSeleniumBrowser:
     '''
     '''
-    def __init__(self, driver_name, remote_server):
+    def __init__(self, driver_name, **kwargs):
         '''
         '''
         self._driver_name=driver_name
         self._driver=webdriver
-        self.remote_server=remote_server
         self.host=''
         self.pid=None
         self.browser=None
@@ -98,16 +97,19 @@ class BaseSeleniumBrowser:
         #set browser global waits
         max_implicity=5
         max_timeout=30
+
         if proxy_port:
             proxy_addr='--proxy=127.0.0.1:{}'.format(proxy_port)
             service_args=[proxy_addr, '--ignore-ssl-errors=yes']
             self.browser=getattr(self._driver, self._driver_name)(service_args=service_args)
         else:
             self.browser=getattr(self._driver, self._driver_name)()
+
         #phantom window spec
         if self._driver_name == 'PhantomJS':
             self.browser.set_window_size(1124, 850)
             self.pid=self.browser.service.process.pid
+
         #waits
         self.browser.implicitly_wait(max_implicity)
         self.browser.set_page_load_timeout(max_timeout)

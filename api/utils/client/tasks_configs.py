@@ -13,23 +13,39 @@ class Fetch:
     '''
     '''
 
-    _base_url='{host}/api/tasks_configs/
+    _endpoint='/api/tasks_configs/{name}'
 
-    def __init__(self):
-        self._host=None
+    def __init__(self, HOST):
+        self._host=HOST
         self._job_obj={}
+        self._target_url=None
 
     def set_host(self, host):
         '''
         '''
         self._host=host
 
-    def request(self, task_name):
+    def name(self, task_name):
         '''
         '''
-        if not identifier.is_digit():
-            #call by name
-        else:
-            #call by id
-        # test response
-        # load response
+        _target=self._name_endpoint.format(task_name)
+        self._target_url=self._host+_target
+
+    def load(self):
+        '''
+        '''
+        r=requests.get(self._target_url)
+        r.raise_for_status()
+        self._job_obj=r.json()
+
+
+
+
+class Save:
+    '''
+    '''
+
+    def __init__(self):
+        '''
+        '''
+        pass

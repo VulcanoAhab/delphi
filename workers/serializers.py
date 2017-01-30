@@ -23,6 +23,7 @@ class TaskConfigDetailSerializer(serializers.ModelSerializer):
         #no proxy by api yet - missing fields::proxy,network_cap
         fields=('name','driver','sequence','mapper','round_limit')
 
+
 class TaskConfigListSerializer(serializers.HyperlinkedModelSerializer):
     '''
     '''
@@ -30,7 +31,7 @@ class TaskConfigListSerializer(serializers.HyperlinkedModelSerializer):
         model=TaskConfig
         fields=('url', 'name', 'sequence', 'driver', 'mapper','round_limit')
         extra_kwargs = {
-            'url': {'view_name': 'api:task_config-detail'},
+            'url': {'view_name': 'api:task_config-detail', 'lookup_field':'name'},
             'driver': {'view_name': 'api:driver-detail'},
             'sequence':{'view_name': 'api:sequence-detail'},
             'mapper':{'view_name':'api:mapper-detail'},

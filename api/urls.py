@@ -13,6 +13,7 @@ router.register(r'tasks_configs',
                 workers_views.TaskConfigsViewSet,
                 'task_config')
 
+
 router.register(r'sequences',
                 grabbers_views.SequenceViewSet,
                 'sequence')

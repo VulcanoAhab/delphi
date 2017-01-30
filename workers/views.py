@@ -37,10 +37,11 @@ class TaskConfigsViewSet(viewsets.ModelViewSet):
     """
     queryset = TaskConfig.objects.all().order_by('id')
     serializer_class = TaskConfigListSerializer
+    lookup_field='name'
 
-    def retrieve(self, request, pk=None):
+    def retrieve(self, request, name=None):
         """
         """
-        taskconfig = get_object_or_404(TaskConfig, pk=pk)
+        taskconfig = get_object_or_404(TaskConfig, name=name)
         serializer = TaskConfigDetailSerializer(taskconfig)
         return Response(serializer.data)

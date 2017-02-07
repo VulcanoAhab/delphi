@@ -49,7 +49,8 @@ INSTALLED_APPS = (
     'api',
 
     'celery',
-    'rest_framework'
+    'rest_framework',
+    'django_extensions'
 )
 
 

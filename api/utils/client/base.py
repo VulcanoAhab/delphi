@@ -23,7 +23,7 @@ class Model:
             raise AttributeError('[-] Unkown field: {}'.format(attr))
         instance._obj[attr]=value
 
-    def __init__(self, **kwargs, obj={}):
+    def __init__(self, obj={}, **kwargs):
         '''
         '''
         if kwargs:

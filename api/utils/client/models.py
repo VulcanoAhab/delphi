@@ -75,3 +75,13 @@ class Sequence(Model):
         '''
         '''
         super().__init__(obj={}, **kwargs)
+
+
+class Driver(Model):
+    '''
+    '''
+    fields=['name', 'type', 'headers']
+    def __init__(self, obj={}, **kwargs):
+        '''
+        '''
+        super().__init__(obj={}, **kwargs)

@@ -39,4 +39,19 @@ class TaskConfig:
         response=requests.get(self.url)
         response.raise_for_status()
         self.response=response.json()
-    
+
+
+    @proterty
+    def toJsonFile(self, file_name):
+        '''
+        '''
+        return self.response
+
+
+    # def load(self):
+    #     '''
+    #     '''
+    #     self.driver=Driver(**self.response['driver'])
+    #     self.sequences=[Sequence(**s) for k,s in self.response['sequence'].items()]
+    #     self.mapper=Mapper(**self.response['mapper'])
+    #     self.round_limit=self.response['round_limit']

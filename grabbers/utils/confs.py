@@ -28,8 +28,8 @@ class GrabberConf:
             tempDict['name']=target_name
             tempDict['selector_type']=target_selector_type
             work_dict['target']=tempDict
-        if grabberObj.extractors:
-            work_dict['extractors']=[grabberObj.extractors.type]
+        if grabberObj.extractor:
+            work_dict['extractors']=[grabberObj.extractor.type]
         if grabberObj.element_action:
             work_dict['element_action']=grabberObj.element_action.type
         if grabberObj.page_action:

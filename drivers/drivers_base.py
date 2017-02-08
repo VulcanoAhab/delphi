@@ -23,7 +23,7 @@ class Helpers:
     '''
     '''
     @staticmethod
-    def _page_to_file_or_db(page, locs, job, page_to):
+    def _page_to_file_or_db(locs, job, page_to):
         '''
         '''
         page=Page()
@@ -67,7 +67,7 @@ class Helpers:
         try:
             page=Page.objects.get(addr=locs.id, job=job)
         except ObjectDoesNotExist:
-            Helpers._page_to_file_or_db(page, locs, job, page_to)
+            Helpers._page_to_file_or_db(locs, job, page_to)
         print('[+] Done saving page [{}]'.format(url[:150]))
         if ('return_page' in kwargs):return page
 

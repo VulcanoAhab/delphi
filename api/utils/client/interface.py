@@ -41,17 +41,23 @@ class TaskConfig:
         self.response=response.json()
 
 
-    @proterty
-    def toJsonFile(self, file_name):
+    @property
+    def toJsonFile(self, file_path):
         '''
         '''
-        return self.response
+        fd=open(file_path, 'w')
+        json.dump(self.response, fd)
+        fd.close()
+        print('[+] Saved file: {}'.file_path)
 
+    def set_driver(self, driverClass):
+        '''
+        '''
+        self._driver=driverClass
 
-    # def load(self):
-    #     '''
-    #     '''
-    #     self.driver=Driver(**self.response['driver'])
-    #     self.sequences=[Sequence(**s) for k,s in self.response['sequence'].items()]
-    #     self.mapper=Mapper(**self.response['mapper'])
-    #     self.round_limit=self.response['round_limit']
+    def set_sequence(self, sequenceClass):
+        '''
+        '''
+        self._sequence=sequenceClass
+
+    

@@ -22,7 +22,7 @@ from celery.task.schedules import crontab
 from celery.decorators import periodic_task
 
 ### ----- (1) tasks ----- ###
-@periodic_task(run_every=(timedelta(seconds=10)))
+@periodic_task(run_every=(timedelta(seconds=3)))
 def task_run():
     '''
     '''
@@ -120,7 +120,7 @@ def jobs_run():
         #ask renew
         run_control.ask_count=0
         #soon will consider tasks duration
-        tasks_limit=1
+        tasks_limit=100
         taskal=tasks_ceiling/jobs_count
         if taskal >  1:
             tasks_limit=taskal

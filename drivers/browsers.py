@@ -11,25 +11,54 @@ class SeleniumPhantom(BaseSeleniumBrowser):
         '''
         super().__init__('PhantomJS')
 
-    def set_header(self, **kwargs):
+
+    def phantom_command(self):
         '''
         '''
-        base='phantomjs.page.customHeaders.'
-        user_base='phantomjs.page.settings.userAgent'
-        self._driver.DesiredCapabilities.PHANTOMJS={}
-        for k,v in kwargs.items():
-            if k == 'User-Agent':
-                k=user_base
-            else:
-                k=''.join([base, k])
-            self._driver.DesiredCapabilities.PHANTOMJS[k]=v
+        script_for_status="""
+        this.onResourceReceived = function(request) {
+        this.request_response=request
+        }.bind(this);
+        """
+        #add phantomjs execute endpoint
+        phantom_exc_uri='/session/$sessionId/phantom/execute'
+        cmds=self.browser.command_executor._commands
+        cmds['executePhantomScript'] = ('POST', phantom_exc_uri)
+        self.browser.execute('executePhantomScript',
+            {'script': script_for_status, 'args': args})
+
+
+    def driver_script(script, args=[]):
+        '''
+        run scripts with phantom internal
+        '''
+        return self.browser.execute('executePhantomScript',
+            {'script': script, 'args': args})
+
+
+    def set_header(self, confObject):
+        '''
+        '''
+
+        headers={h.field_name:h.field_value
+            for h in confObject.driver.headers.all()
+            #Accept-Encoding - avoid phantom bug
+            if h.field_name not in ['Accept-Encoding']}
+
+        header_scrit="""
+        page.customHeaders = {{{headers}}};
+        """.format(headers=str(headers))
+
+        self.driver_script(header_scrit)
 
     def load_confs(self, confObject):
         '''
         '''
-        headers={h.field_name:h.field_value
-                 for h in confObject.driver.headers.all()}
-        self.set_header(**headers)
+        #load headers
+        self.set_header(confObject)
+        #specific confs
+        self.browser.set_window_size(1124, 850)
+        self.pid=self.browser.service.process.pid
 
 class SeleniumRC(BaseSeleniumBrowser):
     '''

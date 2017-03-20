@@ -91,7 +91,12 @@ class BaseSeleniumBrowser:
         '''
         self.host=host
 
-    def build_driver(self, proxy_port=None):
+    def load_confs(self, confObject):
+        '''
+        '''
+        raise NotImplemented('Need to implemented at browser level')
+
+    def build_driver(self, taskConfs=None, proxy_port=None):
         '''
         '''
         #set browser global waits
@@ -105,10 +110,8 @@ class BaseSeleniumBrowser:
         else:
             self.browser=getattr(self._driver, self._driver_name)()
 
-        #phantom window spec
-        if self._driver_name == 'PhantomJS':
-            self.browser.set_window_size(1124, 850)
-            self.pid=self.browser.service.process.pid
+        #load confs :: possible instance level
+        self.load_confs(task_in.config)
 
         #waits
         self.browser.implicitly_wait(max_implicity)

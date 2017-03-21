@@ -59,8 +59,7 @@ def task_run():
         proxy_port=MobProxy.port()
         #build driver
         wd=getattr(browsers, task_in.config.driver.type)()
-        wd.load_confs(task_in.config)
-        wd.build_driver(proxy_port=proxy_port)
+        wd.build_driver(taskConfs=task_in.config, proxy_port=proxy_port)
         print('[+] Starting GET request [{}]'.format(url))
         wd.get(url)
         #process get

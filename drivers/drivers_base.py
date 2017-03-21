@@ -111,7 +111,7 @@ class BaseSeleniumBrowser:
             self.browser=getattr(self._driver, self._driver_name)()
 
         #load confs :: possible instance level
-        self.load_confs(task_in.config)
+        self.load_confs(taskConfs)
 
         #waits
         self.browser.implicitly_wait(max_implicity)

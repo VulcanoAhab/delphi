@@ -11,7 +11,6 @@ class SeleniumPhantom(BaseSeleniumBrowser):
         '''
         super().__init__('PhantomJS')
 
-
     def phantom_command(self):
         '''
         '''
@@ -25,13 +24,14 @@ class SeleniumPhantom(BaseSeleniumBrowser):
         cmds=self.browser.command_executor._commands
         cmds['executePhantomScript'] = ('POST', phantom_exc_uri)
         self.browser.execute('executePhantomScript',
-            {'script': script_for_status, 'args': args})
+            {'script': script_for_status, 'args': []})
 
 
-    def driver_script(script, args=[]):
+    def driver_script(self, script, args=[]):
         '''
         run scripts with phantom internal
         '''
+        print('DRIVER SCRIPT=====', script)
         return self.browser.execute('executePhantomScript',
             {'script': script, 'args': args})
 
@@ -45,8 +45,10 @@ class SeleniumPhantom(BaseSeleniumBrowser):
             #Accept-Encoding - avoid phantom bug
             if h.field_name not in ['Accept-Encoding']}
 
+        print('========HEADERS', headers)
+
         header_scrit="""
-        page.customHeaders = {{{headers}}};
+        this.customHeaders = {headers};
         """.format(headers=str(headers))
 
         self.driver_script(header_scrit)
@@ -54,6 +56,8 @@ class SeleniumPhantom(BaseSeleniumBrowser):
     def load_confs(self, confObject):
         '''
         '''
+        #prepare phantomjs driver call
+        self.phantom_command()
         #load headers
         self.set_header(confObject)
         #specific confs

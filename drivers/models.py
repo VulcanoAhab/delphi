@@ -5,8 +5,8 @@ from drivers.browsers import DriverChoices
 class Header(models.Model):
     '''
     '''
-    field_name=models.CharField(max_length=50)
-    field_value=models.CharField(max_length=500)
+    field_name=models.CharField(max_length=150)
+    field_value=models.TextField()
     header_name=models.CharField(max_length=150)
 
     def __str__(self):

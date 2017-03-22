@@ -9,7 +9,27 @@ from grabbers.models import (Target,
                              Mapper,
                              Sequence,
                              IndexedGrabber)
+# == helpers ==
+def _required_fields(reqList, dataDict):
+    '''
+    '''
+    dataset=set(dataDict.keys())
+    if set(reqList).issubset(dataset):return
+    msg='[-] {} are required fields'.format(', '.join(reqList))
+    raise Exception(msg)
 
+def _get_or_instance(model, lookup_field, data):
+    '''
+    '''
+    value=data.pop(lookup_field)
+    if not value:return None
+    try:
+        instObj=model.objects.get(**{lookup_field:value})
+    except model.DoesNotExist:
+        instObj=model()
+        for k,v in data.items():
+            setattr(instObj,k,v)
+    return instObj
 
 # == Serializers Models ==
 class TargetSerializer(serializers.ModelSerializer):
@@ -20,16 +40,23 @@ class TargetSerializer(serializers.ModelSerializer):
         fields=('field_name', 'field_selector', 'selector_type',
                 'created_at', 'last_modified')
 
+    def to_internal_value(self, data):
+        '''
+        '''
+        reqs=('field_name', 'field_selector', 'selector_type')
+        _required_fields(reqs, data)
+        return data
+
     def save(self):
         '''
         '''
-        field_name=self.self.validated_data.pop('field_name')
-        target,created=Target.objects.get_or_create(field_name=field_name)
+        fname=self.validated_data.pop('field_name')
+        target,created=Target.objects.get_or_create(field_name=fname)
         if created:
             for k,v in self.validated_data.items():
-                setattr(target,k,v)
+                setattr(target, k,v)
             target.save()
-
+        return target
 
 
 class ExtractorSerializer(serializers.ModelSerializer):
@@ -72,7 +99,7 @@ class GrabberSerializer(serializers.ModelSerializer):
                 'page_action', 'target',
                 'created_at', 'last_modified')
 
-    def save(self):
+    def create(self, validated_data):
         '''
         '''
         _fields={
@@ -83,44 +110,29 @@ class GrabberSerializer(serializers.ModelSerializer):
                 }
         #build related objects
         try:
-            grab_name=self.validated_data.pop('name')
+            grab_name=validated_data.pop('name')
         except KeyError as key:
             msg='[-] The {} field is required'.format(key)
-            print(msg)
             raise Exception(msg)
-
-        if self.validated_data.get('extractors'):
-            extype=self.validated_data['extractors']['type']
-            (_fields['extractors'],
-            created)=Extractor.objects.get_or_create(type=extype)
-
-        if self.validated_data.get('target'):
-            tar_name=self.validated_data['target']['field_name']
-            (_fields['target'],
-            created)=Target.objects.get_or_create(field_name=tar_name)
-            if created:
-                _fields['target'].field_selector=target['field_selector']
-                _fields['target'].selector_type=target['selector_type']
-                _fields['target'].save(commit=False)
-
-        if self.validated_data.get('element_action'):
-            el=self.self.validated_data['element_action']['type']
-            (_fields['element_action'],
-            created)=ElementAction.objetcs.get_or_create(type=el)
-
-        if self.validated_data.get('page_action'):
-            pa=self.self.validated_data['page_action']['type']
-            (_fields['page_action'],
-            created)=PageAction.objects.get_or_create(type=pa)
-
-        grabber, grab_created=Grabber.objects.get_or_create(name=grab_name)
-
-        if grab_created:
+        if validated_data.get('extractors'):
+            _fields['extractors']=_get_or_instance(Extractor,'type',
+                                            validated_data['extractors'])
+        if validated_data.get('target'):
+            _fields['target']=_get_or_instance(Target, 'field_name',
+                                                validated_data['target'])
+        if validated_data.get('element_action'):
+            _fields['element_action']=_get_or_instance(ElementAction, 'type',
+                                            validated_data['element_action'])
+        if validated_data.get('page_action'):
+            _fields['page_action']=_get_or_instance(PageAction,'type',
+                                                validated_data['page_action'])
+        grabber=Grabber.objects.filter(name=grab_name).first()
+        if not grabber:
+            grabber=Grabber()
             for k,v in _fields.items():
                 if not v:continue
                 setattr(grabber, k, v)
             grabber.save()
-
         return grabber
 
 class PostElementActionSerializer(serializers.ModelSerializer):
@@ -141,14 +153,18 @@ class IndexedGrabberSerializer(serializers.ModelSerializer):
     '''
     '''
     grabber=GrabberSerializer()
+
     class Meta:
         model=IndexedGrabber
         fields=('grabber', 'sequence_index')
+
+
 
 class SequenceSerializer(serializers.ModelSerializer):
     '''
     '''
     indexed_grabbers=IndexedGrabberSerializer(many=True)
+
     class Meta:
         model=Sequence
         fields='__all__'
@@ -160,47 +176,50 @@ class SequenceSerializer(serializers.ModelSerializer):
         sequence=Sequence.objects.get(name=name)
         value_fields=['name','element_action','post_action',
                       'created_at', 'last_modified']
-        seqs={'sequence_name':name, 'sequence_objects':[]}
+        seqs={'name':name, 'indexed_grabbers':[]}
         for indexed_grabber in obj.indexed_grabbers.all():
             grabber_index=indexed_grabber.sequence_index
             grabber=Grabber.objects.get(id=indexed_grabber.grabber.id)
             if not grabber:continue
             grabis={field:getattr(grabber, field) for field in  value_fields}
             grabis.update({
-                'extractors':ExtractorSerializer(grabber.extractor).data,
-                'target':TargetSerializer(grabber.target).data,
-                'index':grabber_index,
+                'grabber':{
+                    'name':grabber.name,
+                    'extractors':ExtractorSerializer(grabber.extractor).data,
+                    'target':TargetSerializer(grabber.target).data,
+                          },
+                'sequence_index':grabber_index,
             })
-            seqs['sequence_objects'].append(grabis)
-        sorted(seqs['sequence_objects'], key=lambda o:o['index'])
+            seqs['indexed_grabbers'].append(grabis)
+        sorted(seqs['indexed_grabbers'], key=lambda o:o['sequence_index'])
         #return {'data':seqs}
         return seqs
+
 
     def create(self, validated_data):
         '''
         '''
         name=validated_data['name']
         sequence,created=Sequence.objects.get_or_create(name=name)
-        if not created:return sequence
-
+        if not created:
+            print("[-] We already this guy in db")
+            return sequence
         for indexed_grabber in validated_data['indexed_grabbers']:
-
             grabis_index=indexed_grabber['sequence_index']
             grabis_name=indexed_grabber['grabber']['name']
-
-            if IndexedGrabber.objects.filter(
-                sequence_index=grabis_index,
-                grabber=grabis_name).exists():continue
-
             grabber=Grabber.objects.filter(name=grabis_name).first()
             if not grabber:
                 grabis=GrabberSerializer(data=indexed_grabber['grabber'])
                 if not grabis.is_valid():
                     msg='[-] Fail top parse grabber {}'.format(grabis_name)
                     raise TypeError(msg)
-                grabber=grabis.save()
-
-            indexGrabbis=IndexedGrabber(sequence_index=grabis_index,
+                grabber.save()
+            indexGrabbis=IndexedGrabber.objects.filter(
+                sequence_index=grabis_index, grabber=grabber).first()
+            if not indexGrabbis:
+                indexGrabbis=IndexedGrabber(sequence_index=grabis_index,
                                         grabber=grabber)
-            indexGrabbis.save()
+                #many to many needs to be saved
+                indexGrabbis.save()
             sequence.indexed_grabbers.add(indexGrabbis)
+        return sequence

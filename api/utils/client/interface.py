@@ -42,13 +42,13 @@ class TaskConfig:
 
 
     @property
-    def toJsonFile(self, file_path):
+    def responseToJsonFile(self, file_path):
         '''
         '''
         fd=open(file_path, 'w')
         json.dump(self.response, fd)
         fd.close()
-        print('[+] Saved file: {}'.file_path)
+        print('[+] Saved file: {}'.format(file_path))
 
     def set_driver(self, driverClass):
         '''
@@ -59,5 +59,3 @@ class TaskConfig:
         '''
         '''
         self._sequence=sequenceClass
-
-    

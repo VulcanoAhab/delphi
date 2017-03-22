@@ -19,8 +19,8 @@ router.register(r'sequences',
                 'sequence')
 
 router.register(r'mappers',
-                grabbers_views.SequenceViewSet,
-                'mapper')
+                 grabbers_views.MapperViewSet,
+                 'mapper')
 
 router.register(r'drivers',
                 drivers_views.DriverViewSet,

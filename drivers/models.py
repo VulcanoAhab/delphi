@@ -17,18 +17,6 @@ class Header(models.Model):
                                 field=self.field_name
                                         )
 
-# class Cookie(models.Model):
-#     '''
-#     '''
-#     field_name=models.CharField(max_length=50)
-#     field_value=models.CharField(max_length=500)
-#     cookie_name=models.CharField(max_length=50)
-#
-#     def __str__(self):
-#         '''
-#         '''
-#         return self.cookie_name
-
 
 class Driver(models.Model):
     '''

@@ -117,15 +117,6 @@ class BaseSeleniumBrowser:
         self.browser.implicitly_wait(max_implicity)
         self.browser.set_page_load_timeout(max_timeout)
 
-    def set_cookies(self, **cookies):
-        '''
-        '''
-        if not self.host:
-            raise Exception('Host is required for cookie seting')
-        self.browser.get(self.host)
-        for key,value in cookies.items():
-            self.browser.add_cookie({'name':key, 'value':value})
-
     def get_page_source(self):
         '''
         '''

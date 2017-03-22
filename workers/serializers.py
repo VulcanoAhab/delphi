@@ -32,9 +32,9 @@ class TaskConfigListSerializer(serializers.HyperlinkedModelSerializer):
         fields=('url', 'name', 'sequence', 'driver', 'mapper','round_limit')
         extra_kwargs = {
             'url': {'view_name': 'api:task_config-detail', 'lookup_field':'name'},
-            'driver': {'view_name': 'api:driver-detail'},
-            'sequence':{'view_name': 'api:sequence-detail'},
-            'mapper':{'view_name':'api:mapper-detail'},
+            'driver': {'view_name': 'api:driver-detail', 'lookup_field':'name'},
+            'sequence':{'view_name': 'api:sequence-detail', 'lookup_field':'name'},
+            'mapper':{'view_name':'api:mapper-detail', 'lookup_field':'name'},
         }
 
 

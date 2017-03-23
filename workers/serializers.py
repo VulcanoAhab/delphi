@@ -18,11 +18,16 @@ class TaskConfigDetailSerializer(serializers.ModelSerializer):
     '''
     driver=DriverSerializer()
     sequence=SequenceSerializer()
+
     class Meta:
         model=TaskConfig
         #no proxy by api yet - missing fields::proxy,network_cap
         fields=('name','driver','sequence','mapper','round_limit')
 
+    def create(self, validated_data):
+        '''
+        '''
+        pass
 
 class TaskConfigListSerializer(serializers.HyperlinkedModelSerializer):
     '''

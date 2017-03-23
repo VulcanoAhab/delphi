@@ -37,8 +37,7 @@ class TargetSerializer(serializers.ModelSerializer):
     '''
     class Meta:
         model=Target
-        fields=('field_name', 'field_selector', 'selector_type',
-                'created_at', 'last_modified')
+        fields=('field_name', 'field_selector', 'selector_type')
 
     def to_internal_value(self, data):
         '''
@@ -96,8 +95,7 @@ class GrabberSerializer(serializers.ModelSerializer):
     class Meta:
         model=Grabber
         fields=('name','extractors', 'element_action',
-                'page_action', 'target',
-                'created_at', 'last_modified')
+                'page_action', 'target')
 
     def create(self, validated_data):
         '''
@@ -174,8 +172,7 @@ class SequenceSerializer(serializers.ModelSerializer):
         '''
         name=obj.name
         sequence=Sequence.objects.get(name=name)
-        value_fields=['name','element_action','post_action',
-                      'created_at', 'last_modified']
+        value_fields=['name','element_action','post_action']
         seqs={'name':name, 'indexed_grabbers':[]}
         for indexed_grabber in obj.indexed_grabbers.all():
             grabber_index=indexed_grabber.sequence_index

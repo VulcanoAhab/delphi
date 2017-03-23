@@ -10,26 +10,8 @@ from grabbers.models import (Target,
                              Sequence,
                              IndexedGrabber)
 # == helpers ==
-def _required_fields(reqList, dataDict):
-    '''
-    '''
-    dataset=set(dataDict.keys())
-    if set(reqList).issubset(dataset):return
-    msg='[-] {} are required fields'.format(', '.join(reqList))
-    raise Exception(msg)
+from delphi.utils.lizers import _required_fields, _get_or_instance
 
-def _get_or_instance(model, lookup_field, data):
-    '''
-    '''
-    value=data.pop(lookup_field)
-    if not value:return None
-    try:
-        instObj=model.objects.get(**{lookup_field:value})
-    except model.DoesNotExist:
-        instObj=model()
-        for k,v in data.items():
-            setattr(instObj,k,v)
-    return instObj
 
 # == Serializers Models ==
 class TargetSerializer(serializers.ModelSerializer):
@@ -114,16 +96,20 @@ class GrabberSerializer(serializers.ModelSerializer):
             raise Exception(msg)
         if validated_data.get('extractors'):
             _fields['extractors']=_get_or_instance(Extractor,'type',
-                                            validated_data['extractors'])
+                                            validated_data['extractors'],
+                                            ExtractorSerializer)
         if validated_data.get('target'):
             _fields['target']=_get_or_instance(Target, 'field_name',
-                                                validated_data['target'])
+                                                validated_data['target'],
+                                                TargetSerializer)
         if validated_data.get('element_action'):
             _fields['element_action']=_get_or_instance(ElementAction, 'type',
-                                            validated_data['element_action'])
+                                            validated_data['element_action'],
+                                            ElementActionSerializer)
         if validated_data.get('page_action'):
             _fields['page_action']=_get_or_instance(PageAction,'type',
-                                                validated_data['page_action'])
+                                                validated_data['page_action'],
+                                                ElementActionSerializer)
         grabber=Grabber.objects.filter(name=grab_name).first()
         if not grabber:
             grabber=Grabber()

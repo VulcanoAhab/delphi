@@ -7,7 +7,8 @@ from rest_framework.response import Response
 from workers.serializers import (JobSerializer,
                                 TaskConfigListSerializer,
                                 TaskConfigDetailSerializer,
-                                TaskSerializer)
+                                TaskSerializer,
+                                TaskConfigSerializer)
 
 
 # Create your views here.

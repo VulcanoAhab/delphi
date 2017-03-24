@@ -8,6 +8,41 @@ _SPATTERN = [
         ('script', 'script'),
     ]
 
+class Condition(models.Model):
+    '''
+    '''
+    #commented items will be implemented
+    _co=(
+        'text', 'text',
+        #'regex', 'regex'
+        #'element', 'element',
+        'response_status', 'response_status',
+        'server_banner', 'server_banner',
+        #'grabber_name', 'grabber_name'
+    )
+    _re=(
+        'equal', 'equal',
+        'different', 'different',
+        'contain', 'contain',
+        'do_not_contain','do_not_contain'
+    )
+    _st=(
+        'silent','silent',
+        'header', 'header',
+        #'page_data','page_data'
+    )
+    type=models.CharField(max_length=50, choices=_co, default='text')
+    relation=models.ChaField(max_length=50, choices=_re, default='equal')
+    save_type=models.ChaField(max_length=50, choices=_st, default='silent')
+    value=models.TextField()
+    sequence=models.ForeignKey('grabbers.Sequence')
+
+
+    def __str__(self):
+        '''
+        '''
+        return '::'.join([self.type, self.relation, self.value[:50]])
+
 
 class PageAction(models.Model):
     '''
@@ -17,6 +52,7 @@ class PageAction(models.Model):
         ('execute_script', 'execute_script'),
         ('get_header_field', 'get_header_field'),
         ('wait_3_seconds', 'wait_3_seconds'),
+        ('save_headers', 'save_headers'),
         #('switch_to_frame', 'switch_to_frame'),
         #('scroll_page', 'scroll_page'),
             ]

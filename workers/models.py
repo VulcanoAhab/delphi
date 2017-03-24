@@ -22,6 +22,7 @@ class TaskConfig(models.Model):
     sequence=models.ForeignKey('grabbers.Sequence', blank=True, null=True)
     mapper=models.ForeignKey('grabbers.Mapper', blank=True, null=True)
     proxy=models.ForeignKey('proxy.Proxy', blank=True, null=True)
+    condition=models.ForeignKey('grabbers.Condition', blank=True, null=True)
     network_cap=models.BooleanField(default=False)
     round_limit=models.IntegerField(default=0)
 

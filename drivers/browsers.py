@@ -1,3 +1,5 @@
+from functools import partial
+
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from drivers.drivers_base import BaseSeleniumBrowser, DriverChoices, BaseRequests
 
@@ -10,6 +12,7 @@ class SeleniumPhantom(BaseSeleniumBrowser):
         '''
         '''
         super().__init__('PhantomJS')
+        self._headers={}
 
     def phantom_command(self):
         '''
@@ -31,25 +34,19 @@ class SeleniumPhantom(BaseSeleniumBrowser):
         '''
         run scripts with phantom internal
         '''
-        print('DRIVER SCRIPT=====', script)
-        return self.browser.execute('executePhantomScript',
-            {'script': script, 'args': args})
+        return self.phantom_call({'script': script, 'args': args})
 
 
     def set_header(self, confObject):
         '''
         '''
-
-        headers={h.field_name:h.field_value
+        self._headers={h.field_name:h.field_value
             for h in confObject.driver.headers.all()
             #Accept-Encoding - avoid phantom bug
             if h.field_name not in ['Accept-Encoding']}
-
-        print('========HEADERS', headers)
-
         header_scrit="""
         this.customHeaders = {headers};
-        """.format(headers=str(headers))
+        """.format(headers=str(self._headers))
 
         self.driver_script(header_scrit)
 
@@ -58,6 +55,8 @@ class SeleniumPhantom(BaseSeleniumBrowser):
         '''
         #prepare phantomjs driver call
         self.phantom_command()
+        self.phantom_call=partial(self.browser.execute, 'executePhantomScript')
+
         #load headers
         self.set_header(confObject)
         #specific confs

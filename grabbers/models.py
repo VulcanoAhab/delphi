@@ -18,6 +18,7 @@ class Condition(models.Model):
         #'element', 'element',
         'response_status', 'response_status',
         'server_banner', 'server_banner',
+        'status_and_banner', 'status_and_banner'
         #'grabber_name', 'grabber_name'
     )
     _re=(

@@ -16,15 +16,12 @@ from grabbers.utils.confs import GrabberConf, MapperConf
 from information.models import PageData, make_control_key
 from urlocators.models import Page, Locator, make_url_id
 from workers.models import Job
+from driver.models import Header
 from grabbers.models import Target, ElementAction, PostElementAction, Extractor, PageAction
 from workers.utils.tasksProducer import TaskFromUrls
 
-
-# from lxml import html
-# from lxml import etree
-
-
-## ---  extract page data
+# ---  extract page & response data
+#########################
 class Pythoness:
     '''
     '''
@@ -106,6 +103,7 @@ class Pythoness:
                                 task_configs*len(urls), self._job))
 
     #---- mapper helper
+    ###################
     def _map_url(self, u, current_url):
         parsed_url = urlparse(u)
         if not parsed_url.netloc:
@@ -182,15 +180,26 @@ class Pythoness:
                     self._save_field(field_name, value, element_index, page)
                     time.sleep(0.001)
 
-    def condition_save(self, condition_type):
+    def save_condition(self, browser, condition_type):
         '''
         '''
         if condition_type == 'page_data':
             msg='[-] Condition::Page Data save was'' not implemented yet'
             raise NotImplemented(msg)
-        
+        if condition_type == 'silent':return
+        headers=browser.get_headers()
+        for header in headers:
+            hea=Header()
+            hea.field_name=header['name']
+            hea.field_value=header['value']
+            hea.header_name=header['header_name']
+            hea.save()
+        print('[+] Done saving condition::{}'.format(condition_type))
+
+
 
     # --- save data  helpers
+    ########################
     def _build_urllocators_objs(self, url):
         '''
         obs

@@ -102,7 +102,7 @@ class ProcessCondition:
             ps.set_grabber(indexed_grabber.grabber)
             ps.session(self._browser, element_index=index)
         #condition save only on by the last sequence element
-        ps.save_condition(self._condition.save_type)
+        ps.save_condition(self._browser, self._condition.save_type)
 
     def run(self):
         '''
@@ -110,16 +110,12 @@ class ProcessCondition:
         if not self._condition:
             print('[-] No condition to work')
             return
-        
+
         ####------  test condition ---------------
         ##########################################
         Condis.type=self._condition.type
         Condis.relation=self._condition.relation
         Condis.value=self._condition.value
         if not Condis.test(self._browser):return
-        if self._sequence_maps['size']<=1:
-            self.fire_sequence()
-        else:
-            run_cycle=range(self._sequence_maps['size'])
-            for n in run_cycle:self.fire_sequence(index=n)
+        self.fire_sequence()
         print('[+] Condition::sequence is done')

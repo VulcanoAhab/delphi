@@ -34,18 +34,25 @@ class PhantomScripts:
     def response_status(cls):
         '''
         '''
-        return cls._caller(cls._response_status)[['value'][0]['status']
+        return cls._caller(cls._response_status)['value']['status']
 
     @classmethod
     def server_banner(cls):
         '''
         '''
-        headers=cls._caller(cls._server_banner)['value'][0]['headers']
+        headers=cls._caller(cls._server_banner)['value']['headers']
         for header in headers:
             if header.get('name','').lower() != 'server':continue
             return header.get('value','').lower()
         return ''
 
+    @classmethod
+    def status_and_banner(cls):
+        '''
+        '''
+        server=cls.server_banner()
+        response_status=cls.response_status()
+        return str(response_status)+":::"+server
 
 class Condis:
     '''
@@ -57,8 +64,8 @@ class Condis:
     _rels={
         'equal':lambda x,y:x==y,
         'different':lambda x,y:x!=y,
-        'contains':lambda x,y: x.lower() in y.lower()
-        'do_not_contain':lambda x,y: x.lower() not in y.lower()
+        'contains':lambda x,y: x.lower() in y.lower(),
+        'do_not_contain':lambda x,y: x.lower() not in y.lower(),
     }
 
     @classmethod
@@ -68,6 +75,28 @@ class Condis:
         fn=cls._rels[cls.relation]
         return fn(cls.value.strip().lower(), page_text.lower())
 
+    @classmethod
+    def _status_and_banner(cls, status_and_banner):
+        '''
+        '''
+        fn=cls._rels[cls.relation]
+        return fn(cls.value.lower(), status_and_banner.lower())
+
+
+    @classmethod
+    def _response_status(cls,response_status):
+        '''
+        '''
+        fn=cls._rels[cls.relation]
+        return fn(int(cls.value), int(response_status))
+
+    @classmethod
+    def _server_banner(cls, server_banner ):
+        '''
+        '''
+        fn=cls._rels[cls.relation]
+        return fn(cls.value.strip().lower(), server_banner.lower())
+
 
     @classmethod
     def test(cls, browser):
@@ -75,8 +104,8 @@ class Condis:
         '''
         _t={
             'text':cls._text,
-            'response_status':cls._status,
-            'server_banner':cls._banner,
+            'response_status':cls._response_status,
+            'server_banner':cls._server_banner,
             'status_and_banner':cls._status_and_banner,
         }
         #test for browser -- methods only tested with selenium driver (yet)

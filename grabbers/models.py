@@ -13,28 +13,28 @@ class Condition(models.Model):
     '''
     #commented items will be implemented
     _co=(
-        'text', 'text',
-        #'regex', 'regex'
-        #'element', 'element',
-        'response_status', 'response_status',
-        'server_banner', 'server_banner',
-        'status_and_banner', 'status_and_banner'
-        #'grabber_name', 'grabber_name'
+        ('text', 'text'),
+        # ('regex', 'regex'),
+        # ('element', 'element',),
+        ('response_status', 'response_status'),
+        ('server_banner', 'server_banner'),
+        ('status_and_banner', 'status_and_banner'),
+        # ('grabber_name', 'grabber_name'),
     )
     _re=(
-        'equal', 'equal',
-        'different', 'different',
-        'contain', 'contain',
-        'do_not_contain','do_not_contain'
+        ('equal', 'equal'),
+        ('different', 'different'),
+        ('contain', 'contain'),
+        ('do_not_contain','do_not_contain'),
     )
     _st=(
-        'silent','silent',
-        'header', 'header',
-        #'page_data','page_data'
+        ('silent','silent'),
+        ('header', 'header')
+        #('page_data','page_data)'
     )
     type=models.CharField(max_length=50, choices=_co, default='text')
-    relation=models.ChaField(max_length=50, choices=_re, default='equal')
-    save_type=models.ChaField(max_length=50, choices=_st, default='silent')
+    relation=models.CharField(max_length=50, choices=_re, default='equal')
+    save_type=models.CharField(max_length=50, choices=_st, default='silent')
     value=models.TextField()
     sequence=models.ForeignKey('grabbers.Sequence')
 

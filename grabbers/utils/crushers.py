@@ -9,16 +9,18 @@ from urllib.parse import urlparse
 from django.core.exceptions import ObjectDoesNotExist
 
 ### apps imports
-from grabbers.utils.miners import grabis
+from grabbers.utils import miners
 
 from grabbers.utils.confs import GrabberConf, MapperConf
 
 from information.models import PageData, make_control_key
 from urlocators.models import Page, Locator, make_url_id
 from workers.models import Job
-from driver.models import Header
+from drivers.models import Header
 from grabbers.models import Target, ElementAction, PostElementAction, Extractor, PageAction
 from workers.utils.tasksProducer import TaskFromUrls
+
+Grabis=miners.Grabis()
 
 # ---  extract page & response data
 #########################
@@ -188,11 +190,12 @@ class Pythoness:
             raise NotImplemented(msg)
         if condition_type == 'silent':return
         headers=browser.get_headers()
-        for header in headers:
+        print("H======>{}".format(headers))
+        for k,v in headers.items():
             hea=Header()
-            hea.field_name=header['name']
-            hea.field_value=header['value']
-            hea.header_name=header['header_name']
+            hea.field_name=k
+            hea.field_value=v
+            hea.header_name=browser._header_name
             hea.save()
         print('[+] Done saving condition::{}'.format(condition_type))
 

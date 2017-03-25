@@ -16,7 +16,6 @@ from django.core.exceptions import ObjectDoesNotExist
 
 #db models
 from urlocators.models import Page, Locator, make_url_id
-from drivers.models import Header
 #===========================================================#
 #=================== Drivers helpers =======================#
 class Helpers:
@@ -26,7 +25,7 @@ class Helpers:
     def _save_headers(headers, header_name):
         '''
         '''
-        
+        pass
 
     @staticmethod
     def _page_to_file_or_db(source, locs, job, page_to):

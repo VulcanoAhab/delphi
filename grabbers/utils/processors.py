@@ -1,4 +1,5 @@
-from grabbers.utils.html import Pythoness
+from grabbers.utils.crushers import Pythoness
+from grabbers.utils.filters import Condis
 
 
 class ProcessSequence:
@@ -80,3 +81,41 @@ class ProcessSequence:
             for n in run_cycle:self.fire_sequence(index=n)
         print('[+] Sequence is done')
 
+
+
+class ProcessCondition:
+    '''
+    '''
+    def __init__(self, browser, condition):
+        self._browser=browser
+        self._sequence=condition.sequence
+        self._condition=condition
+
+    def fire_sequence(self, index=-1):
+        '''
+        '''
+        iseq=self._sequence.indexed_grabbers.all().order_by('sequence_index')
+        #start grabbers sequence
+        for indexed_grabber in iseq:
+            print('[+] Grabber [{}] running.'.format(indexed_grabber))
+            ps=Pythoness()
+            ps.set_grabber(indexed_grabber.grabber)
+            ps.session(self._browser, element_index=index)
+        #condition save only on by the last sequence element
+        ps.save_condition(self._browser, self._condition.save_type)
+
+    def run(self):
+        '''
+        '''
+        if not self._condition:
+            print('[-] No condition to work')
+            return
+
+        ####------  test condition ---------------
+        ##########################################
+        Condis.type=self._condition.type
+        Condis.relation=self._condition.relation
+        Condis.value=self._condition.value
+        if not Condis.test(self._browser):return
+        self.fire_sequence()
+        print('[+] Condition::sequence is done')

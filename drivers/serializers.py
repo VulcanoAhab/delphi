@@ -10,6 +10,17 @@ class HeaderSerializer(serializers.ModelSerializer):
         model=Header
         fields=('field_name', 'field_value', 'header_name')
 
+    def create(self, validated_data):
+        '''
+        '''
+        field_name=validated_data['field_name']
+        header_name=validated_data['header_name']
+        try:
+            header=Header.objects.get(field_name=field_name,
+                                       header_name=header_name)
+        except ObjectDoesNotExist:
+            header=Header(**validated_data)
+        return header
 
 
 class DriverSerializer(serializers.ModelSerializer):
@@ -22,25 +33,20 @@ class DriverSerializer(serializers.ModelSerializer):
         model=Driver
         fields=('name', 'type', 'headers')
 
-    def save(self):
+    def create(self, validated_data):
         '''
         '''
-        data=self.validated_data
-        name=data['name']
-
+        name=validated_data['name']
         try:
             driver=Driver.objects.get(name=name)
         except ObjectDoesNotExist:
             driver=Driver()
             driver.name=name
             driver.type=data['type']
-            driver.save()
             if data.get('headers'):
                 for header in data['headers']:
                     headerObj,created=Header.objects.get_or_create(
                                                             **header)
-                    if created:
-                        headerObj.save()
+                    if created:headerObj.save()
                     driver.headers.add(headerObj)
-            driver.save()
         return driver

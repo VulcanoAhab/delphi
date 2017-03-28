@@ -5,7 +5,6 @@ from grabbers.models import Sequence, Mapper
 from rest_framework.response import Response
 from rest_framework import status
 
-
 # Create your views here.
 
 class SequenceViewSet(viewsets.ModelViewSet):
@@ -26,7 +25,8 @@ class SequenceViewSet(viewsets.ModelViewSet):
     def create(self, request):
         '''
         '''
-        seqse=SequenceSerializer(data=request.data)
+        datis=request.data
+        seqse=SequenceSerializer(data=datis)
         if seqse.is_valid():
             seqse.save()
             return Response(seqse.data, status=status.HTTP_201_CREATED)

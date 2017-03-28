@@ -12,6 +12,8 @@ class HeaderAdmin(admin.ModelAdmin):
     '''
     '''
     list_display=['header_name', 'field_name', 'field_value']
+    list_filter=['header_name', 'field_name']
+    search_fields=['field_name','field_value','header_name']
 
 
 admin.site.register(Driver, DriverAdmin)

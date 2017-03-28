@@ -8,7 +8,7 @@ from delphi.celery import app
 from drivers import browsers
 from workers.models import Job, Task, RunControl
 from workers.utils.commons import build_control_key
-from grabbers.utils.processors import ProcessSequence
+from grabbers.utils.processors import ProcessSequence, ProcessCondition
 
 #proxy
 from proxy.utils.proxy import MobProxy
@@ -62,6 +62,10 @@ def task_run():
         wd.build_driver(taskConfs=task_in.config, proxy_port=proxy_port)
         print('[+] Starting GET request [{}]'.format(url))
         wd.get(url)
+        if task_in.config.condition:
+            cond=ProcessCondition(wd, task_in.config.condition)
+            #only run sequence if cond
+            cond.run()
         #process get
         process=ProcessSequence()
         process.set_job(job)

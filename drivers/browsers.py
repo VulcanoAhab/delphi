@@ -1,3 +1,5 @@
+from functools import partial
+
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from drivers.drivers_base import BaseSeleniumBrowser, DriverChoices, BaseRequests
 
@@ -10,6 +12,8 @@ class SeleniumPhantom(BaseSeleniumBrowser):
         '''
         '''
         super().__init__('PhantomJS')
+        self._headers={}
+        self._header_name=''
 
     def phantom_command(self):
         '''
@@ -31,25 +35,22 @@ class SeleniumPhantom(BaseSeleniumBrowser):
         '''
         run scripts with phantom internal
         '''
-        print('DRIVER SCRIPT=====', script)
-        return self.browser.execute('executePhantomScript',
-            {'script': script, 'args': args})
+        return self.phantom_call({'script': script, 'args': args})
 
 
     def set_header(self, confObject):
         '''
         '''
-
-        headers={h.field_name:h.field_value
-            for h in confObject.driver.headers.all()
+        headersObj=[h for h in confObject.driver.headers.all()]
+        if not len(headersObj):return
+        self._headers={h.field_name:h.field_value
+            for h in headersObj
             #Accept-Encoding - avoid phantom bug
             if h.field_name not in ['Accept-Encoding']}
-
-        print('========HEADERS', headers)
-
+        self._header_name=headersObj[0].header_name
         header_scrit="""
         this.customHeaders = {headers};
-        """.format(headers=str(headers))
+        """.format(headers=str(self._headers))
 
         self.driver_script(header_scrit)
 
@@ -58,11 +59,28 @@ class SeleniumPhantom(BaseSeleniumBrowser):
         '''
         #prepare phantomjs driver call
         self.phantom_command()
+        self.phantom_call=partial(self.browser.execute, 'executePhantomScript')
+
         #load headers
         self.set_header(confObject)
         #specific confs
         self.browser.set_window_size(1124, 850)
         self.pid=self.browser.service.process.pid
+
+    def get_headers(self):
+        '''
+        ** Cookie from response + Request headers **
+        '''
+        cookie_script="""
+        return this.cookies;
+        """
+        if 'Cookie' in self._headers:return self._headers
+        cookies=self.driver_script(cookie_script)['value']
+        print(cookies)
+        cookie_string=' ;'.join(['{}={}'.format(c['name'],c['value'])
+                                for c in cookies])
+        self._headers.update({'Cookie':cookie_string})
+        return self._headers
 
 class SeleniumRC(BaseSeleniumBrowser):
     '''
@@ -110,20 +128,25 @@ class LeanRequests(BaseRequests):
         '''
         '''
         super().__init__()
+        self._headers={}
+        self._header_name=''
 
     def load_confs(self, confObject):
         '''
         '''
-        headersObj=confObject.driver.headers.all()
-        if headersObj.count():
-            headers={h.field_name:h.field_value
+        headersObj=[h for h in confObject.driver.headers.all()]
+        if not len(headersObj):return
+        headers={h.field_name:h.field_value
                      for h in headersObj}
-            self.set_header(**headers)
+        self.set_header(**headers)
+        self._header_name=headersObj[0].header_name
+
 
     def set_header(self, **kwargs):
         '''
         '''
         self._headers=kwargs
+
 
 
 DriverChoices.register(SeleniumPhantom)

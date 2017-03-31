@@ -75,7 +75,7 @@ class Pythoness:
         page_object=Grabis.load_page(self._job, browser, save_source=False)
         #mine target links
         try:
-            gb=Grabis()
+            gb=Grabis
             gb.set_selector(selector)
             gb.set_page_object(page_object)
             gb.grab()
@@ -125,7 +125,7 @@ class Pythoness:
             print('[+] Start targeting selector [{0}]'.format(selector))
             page_object=Grabis.load_page(self._job, browser)
             try:
-                gb=Grabis()
+                gb=Grabis
                 gb.set_selector(selector)
                 gb.set_page_object(page_object)
             except Exception as e:
@@ -182,9 +182,11 @@ class Pythoness:
                     self._save_field(field_name, value, element_index, page)
                     time.sleep(0.001)
 
-    def save_condition(self, browser, condition_type):
+    def save_condition(self, browser, condition):
         '''
         '''
+        condition_type = condition.save_type
+        condition_confs = condition.taskconfig_set.all()
         if condition_type == 'page_data':
             msg='[-] Condition::Page Data save was'' not implemented yet'
             raise NotImplemented(msg)
@@ -197,6 +199,15 @@ class Pythoness:
             hea.field_value=v
             hea.header_name=browser._header_name
             hea.save()
+            for conf in condition_confs:
+                has_headers = conf.driver.headers.filter(
+                    field_name=hea.field_name)
+                for h_header in has_headers:
+                    conf.driver.headers.remove(h_header)
+                    time.sleep(0.001)
+                conf.driver.headers.add(hea)
+                time.sleep(0.001)
+
         print('[+] Done saving condition::{}'.format(condition_type))
 
 

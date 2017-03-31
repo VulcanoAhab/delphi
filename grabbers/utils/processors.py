@@ -102,7 +102,7 @@ class ProcessCondition:
             ps.set_grabber(indexed_grabber.grabber)
             ps.session(self._browser, element_index=index)
         #condition save only on by the last sequence element
-        ps.save_condition(self._browser, self._condition.save_type)
+        ps.save_condition(self._browser, self._condition)
 
     def run(self):
         '''

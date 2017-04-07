@@ -114,5 +114,10 @@ SUIT_CONFIG = {
 
 
 REST_FRAMEWORK = {
-    'PAGE_SIZE':10,
+    'PAGE_SIZE': 10,
+}
+
+CELERY_ROUTES = {
+    'workers.tasks.jobs_run': {'queue': 'jobs'},
+    'workers.tasks.task_run': {'queue': 'tasks'},
 }

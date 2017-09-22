@@ -141,6 +141,11 @@ class BaseSeleniumBrowser:
         '''
         self.browser.back()
 
+    def toMainPage(self, **kwargs):
+        '''
+        '''
+        self.browser.switch_to_default_content()
+
     def get(self, url):
         '''
         '''
@@ -180,11 +185,18 @@ class BaseSeleniumBrowser:
         '''
         time.sleep(3)
 
-    def switch_to_frame(self, **kwargs):
+    def switch_to_frame(self, action_data, **kwargs):
         '''
         '''
-        raise NotImplemented('Not implemented yet')
-
+        try:
+            framis=self.browser.find_element_by_xpath(action_data["xpath"])
+            if not framis:
+                print("[-] Fail to find frame")
+                return
+            self.browser.switch_to_frame(framis)
+        except Exception as e:
+            print("[-] Fail to grab frame: {}".format(e))
+            return
 
 class BaseRequests:
     '''

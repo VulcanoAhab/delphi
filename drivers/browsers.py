@@ -76,7 +76,6 @@ class SeleniumPhantom(BaseSeleniumBrowser):
         """
         if 'Cookie' in self._headers:return self._headers
         cookies=self.driver_script(cookie_script)['value']
-        print(cookies)
         cookie_string=' ;'.join(['{}={}'.format(c['name'],c['value'])
                                 for c in cookies])
         self._headers.update({'Cookie':cookie_string})

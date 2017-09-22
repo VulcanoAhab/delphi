@@ -155,13 +155,20 @@ class Pythoness:
                     raise TypeError('[-] Only Lean Requests has get header field')
                 #target header field is passed as extractor
                 action_data.update({'header_field':self._conf['extractors']})
-            if page_action == 'execute_script':
+            elif page_action == 'execute_script':
                 if browser_name == 'LeanRequests':
                     raise TypeError('[-] Lean Requests has no execute script')
                 if not selector: #for now script is send by selector ---------
                     raise TypeError('[-] Script in target is required')
                 field_name=field_name=self._conf['target']['name']
                 action_data={'field_name':field_name, 'script':selector}
+            elif page_action == 'switch_to_frame':
+                if browser_name == 'LeanRequests':
+                    raise TypeError('[-] Lean Requests has no execute script')
+                if not selector: #for now script is send by selector ---------
+                    raise TypeError('[-] Frame set_selector is required')
+                field_name=field_name=self._conf['target']['name']
+                action_data={'field_name':field_name, 'xpath':selector}
             print('[+] Start page action [{0}]'.format(page_action))
             getattr(browser, page_action)(page_data=self._data,
                                           action_data=action_data)

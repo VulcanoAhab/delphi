@@ -140,6 +140,7 @@ class Pythoness:
                 gb.grab()
                 data=gb.get_data(field_name, attrs)
                 self._data['page_data']=data
+                
             #will deal with elements list to action and post action
             if 'element_action' in self._conf:
                 #test browser type

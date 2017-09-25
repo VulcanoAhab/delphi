@@ -134,6 +134,8 @@ class BaseSeleniumBrowser:
         url=self.browser.current_url
         if 'target_url' in kwargs:
             url=kwargs['target_url']
+        if "action_data" in kwargs:
+            kwargs=kwargs["action_data"]
         return Helpers.save_page_source(url, source, **kwargs)
 
     def back(self, **kwargs):

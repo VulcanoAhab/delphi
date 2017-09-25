@@ -184,6 +184,8 @@ class Pythoness:
                     raise TypeError('[-] Frame set_selector is required')
                 field_name=field_name=self._conf['target']['name']
                 action_data={'field_name':field_name, 'xpath':selector}
+            elif page_action == 'page_source':
+                action_data={'job':self._job}
             print('[+] Start page action [{0}]'.format(page_action))
             getattr(browser, page_action)(page_data=self._data,
                                           action_data=action_data)

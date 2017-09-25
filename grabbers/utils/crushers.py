@@ -138,6 +138,13 @@ class Pythoness:
                 print('[-] Fail to load conf in Grabis', e)
                 return
 
+            if 'extractors' in self._conf:
+                field_name=self._conf['target']['name']
+                attrs=self._conf['extractors']
+                gb.grab()
+                data=gb.get_data(field_name, attrs)
+                self._data['page_data']=data
+
             if 'element_action' in self._conf:
                 #test browser type
                 if browser_name == 'LeanRequests':
@@ -155,13 +162,8 @@ class Pythoness:
                 gb.action(self._conf['element_action'], browser,
                           element_index, post_action=pa)
 
+            
 
-            if 'extractors' in self._conf:
-                field_name=self._conf['target']['name']
-                attrs=self._conf['extractors']
-                gb.grab()
-                data=gb.get_data(field_name, attrs)
-                self._data['page_data']=data
         if 'page_action' in self._conf:
             #it's dirty - needs to improve
             page_action=self._conf['page_action']

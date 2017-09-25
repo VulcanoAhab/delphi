@@ -1,3 +1,4 @@
+import time
 from lxml import html, etree
 
 ## ---  find & grab page data
@@ -113,7 +114,13 @@ class Grabis:
             targets=els
         #do action
         for target in targets:
-            getattr(target, action_type)()
+            try:
+                getattr(target, action_type)()
+                time.sleep(1)
+            except Exception as e:
+                print("[-] Fail to execute action: {}"\
+                      " on target: {}".format(action_type, target))
+                continue
             if not post_action: continue
             post_action.session(browser)
             post_action.save_data(browser)

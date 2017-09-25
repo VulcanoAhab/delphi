@@ -79,12 +79,13 @@ class Grabis:
         ------
         list: [{field_name:field_data, index:element_index},...]
         '''
-        if as_elements: return self.data
+        if as_elements: return self.data #self.data is a lxml element[s]
         return Grabis.load_data_from_selected(self.data, field_name, attrs)
 
     def grab(self):
         '''
         '''
+        #xpath or other element extraction function
         fn=getattr(self._page_object, self._eltype)
         try:
             self.data=fn(self._selector)
@@ -92,30 +93,27 @@ class Grabis:
             print('[+] Fail to find element', self._selector)
             return 2
 
-    def action(self, action_type, browser, element_index,
-                                post_action=None, job=None):
+    def action(self, action_type, browser, element_index, post_action=None):
         '''
         '''
         try:
-            els=browser.browser.find_elements_by_xpath(self._selector) #shoulb be in browser api
+            #shoulb be in browser api - find elements to be act upon
+            els=browser.browser.find_elements_by_xpath(self._selector)
         except Exception as e:
             print('[+] Fail to find element', self._selector)
             return 2
         if element_index >=0:
             elslen=len(els)
             if element_index > elslen-1:
-                print('[-] Index out of range GOT: [{}] | LEN [{}]'.format(element_index, elslen))
+                print('[-] Index out of range GOT: [{}]' \
+                      '| LEN [{}]'.format(element_index, elslen))
                 return 1
             targets=[els[element_index]]
         else:
             targets=els
+        #do action
         for target in targets:
             getattr(target, action_type)()
-            if post_action:
-                if not job:
-                    raise Exception('[-] Jobs is required for post action')
-                ps=Pythoness()
-                ps.set_job(job)
-                ps.set_grabber(post_action)
-                ps.session(browser)
-                ps.save_data(browser)
+            if not post_action: continue
+            post_action.session(browser)
+            post_action.save_data(browser)

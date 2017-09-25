@@ -96,6 +96,7 @@ class Pythoness:
                 full_url=self._map_url(mined_url, current_url)
                 urls.append(full_url)
                 self._save_field(field_name, full_url, element_index, page)
+        #build tasks for next crawling
         for task_config in task_configs:
             TaskFromUrls._job=self._job
             TaskFromUrls._config=task_config
@@ -119,6 +120,11 @@ class Pythoness:
         '''
         #get general vals
         browser_name=browser.__class__.__name__
+
+        print("\n\n")
+        print(self._conf)
+        print("\n\n")
+
         # set base values
         if 'target' in self._conf:
             selector=self._conf['target']['selector']
@@ -131,14 +137,25 @@ class Pythoness:
             except Exception as e:
                 print('[-] Fail to load conf in Grabis', e)
                 return
+
             if 'element_action' in self._conf:
                 #test browser type
                 if browser_name == 'LeanRequests':
                     raise TypeError('[-] Lean Requests has no action')
                 post_action=self._conf['post_action']
+
+                if post_action:
+                    pa=Pythoness()
+                    pa.set_task(self._task)
+                    pa.set_job(self._job)
+                    pa.set_grabber(post_action)
+                else:
+                    pa=None
+
                 gb.action(self._conf['element_action'], browser,
-                          element_index, post_action=post_action,
-                          job=self._job)
+                          element_index, post_action=pa)
+
+
             if 'extractors' in self._conf:
                 field_name=self._conf['target']['name']
                 attrs=self._conf['extractors']
@@ -172,6 +189,7 @@ class Pythoness:
             print('[+] Start page action [{0}]'.format(page_action))
             getattr(browser, page_action)(page_data=self._data,
                                           action_data=action_data)
+
 
 
     def save_data(self, browser, target_url=None):
@@ -242,7 +260,7 @@ class Pythoness:
         #build page relation
         try:
             page=Page.objects.get(addr=locs.id, job=self._job)
-        except ObjectDoesNotExist:
+        except Page.DoesNotExist:
             page=Page()
             page.job=self._job
             page.task=self._task

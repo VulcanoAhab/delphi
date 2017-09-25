@@ -36,6 +36,7 @@ class Grabis:
     def load_data_from_selected(elements, field, attrs):
         '''
         '''
+        if not field:raise Exception("[-] Field name in required")
         data_container=[dict() for _ in elements]
         for n,value in enumerate(elements):
             data=Grabis._exData(value, attrs)
@@ -74,7 +75,7 @@ class Grabis:
             raise Exception('[-] Fail to load page_object')
         self._page_object=page_object
 
-    def get_data(self, field_name, attrs=[], as_elements=False):
+    def get_data(self, field_name=None, attrs=[], as_elements=False):
         '''
         returns
         ------
@@ -93,34 +94,3 @@ class Grabis:
         except Exception as e:
             print('[+] Fail to find element', self._selector)
             return 2
-
-    def action(self, action_type, browser, element_index, post_action=None):
-        '''
-        '''
-        try:
-            #shoulb be in browser api - find elements to be act upon
-            els=browser.browser.find_elements_by_xpath(self._selector)
-        except Exception as e:
-            print('[+] Fail to find element', self._selector)
-            return 2
-        if element_index >=0:
-            elslen=len(els)
-            if element_index > elslen-1:
-                print('[-] Index out of range GOT: [{}]' \
-                      '| LEN [{}]'.format(element_index, elslen))
-                return 1
-            targets=[els[element_index]]
-        else:
-            targets=els
-        #do action
-        for target in targets:
-            try:
-                getattr(target, action_type)()
-                time.sleep(1)
-            except Exception as e:
-                print("[-] Fail to execute action: {}"\
-                      " on target: {}".format(action_type, target))
-                continue
-            if not post_action: continue
-            post_action.session(browser)
-            post_action.save_data(browser)

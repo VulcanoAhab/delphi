@@ -121,10 +121,6 @@ class Pythoness:
         #get general vals
         browser_name=browser.__class__.__name__
 
-        print("\n\n")
-        print(self._conf)
-        print("\n\n")
-
         # set base values
         if 'target' in self._conf:
             selector=self._conf['target']['selector']
@@ -144,25 +140,25 @@ class Pythoness:
                 gb.grab()
                 data=gb.get_data(field_name, attrs)
                 self._data['page_data']=data
-
+            #will deal with elements list to action and post action
             if 'element_action' in self._conf:
                 #test browser type
                 if browser_name == 'LeanRequests':
                     raise TypeError('[-] Lean Requests has no action')
-                post_action=self._conf['post_action']
+                #grab target elements
+                toAction=browser.xpathToaction(selector)
+                actionType=self._conf['element_action']
+                #apply action
+                for targetAction in toAction:
+                    getattr(targetAction, actionType)()
+                    if not self._conf['post_action']:continue
+                    postAction=Pythoness()
+                    postAction.set_task(self._task)
+                    postAction.set_job(self._job)
+                    postAction.set_grabber(self._conf['post_action'])
+                    postAction.session(browser)
+                    postAction.save_data(browser)
 
-                if post_action:
-                    pa=Pythoness()
-                    pa.set_task(self._task)
-                    pa.set_job(self._job)
-                    pa.set_grabber(post_action)
-                else:
-                    pa=None
-
-                gb.action(self._conf['element_action'], browser,
-                          element_index, post_action=pa)
-
-            
 
         if 'page_action' in self._conf:
             #it's dirty - needs to improve
@@ -192,6 +188,14 @@ class Pythoness:
             getattr(browser, page_action)(page_data=self._data,
                                           action_data=action_data)
 
+        #will call a post-action
+        if  self._conf['post_action'] and not 'element_action' in self._conf:
+            postAction=Pythoness()
+            postAction.set_task(self._task)
+            postAction.set_job(self._job)
+            postAction.set_grabber(self._conf['post_action'])
+            postAction.session(browser)
+            postAction.save_data(browser)
 
 
     def save_data(self, browser, target_url=None):

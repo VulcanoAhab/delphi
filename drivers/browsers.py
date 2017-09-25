@@ -81,6 +81,11 @@ class SeleniumPhantom(BaseSeleniumBrowser):
         self._headers.update({'Cookie':cookie_string})
         return self._headers
 
+    def xpathToaction(self, xpathSelector):
+        """
+        """
+        return self.browser.find_elements_by_xpath(xpathSelector)
+
 class SeleniumRC(BaseSeleniumBrowser):
     '''
     '''

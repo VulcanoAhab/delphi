@@ -140,7 +140,7 @@ class Pythoness:
                 gb.grab()
                 data=gb.get_data(field_name, attrs)
                 self._data['page_data']=data
-                
+
             #will deal with elements list to action and post action
             if 'element_action' in self._conf:
                 #test browser type
@@ -165,12 +165,14 @@ class Pythoness:
             #it's dirty - needs to improve
             page_action=self._conf['page_action']
             action_data={}
+
             #legacy - now is required
             if page_action == 'get_header_field':
                 if browser_name != 'LeanRequests':
                     raise TypeError('[-] Only Lean Requests has get header field')
                 #target header field is passed as extractor
                 action_data.update({'header_field':self._conf['extractors']})
+
             elif page_action == 'execute_script':
                 if browser_name == 'LeanRequests':
                     raise TypeError('[-] Lean Requests has no execute script')
@@ -178,6 +180,7 @@ class Pythoness:
                     raise TypeError('[-] Script in target is required')
                 field_name=field_name=self._conf['target']['name']
                 action_data={'field_name':field_name, 'script':selector}
+
             elif page_action == 'switch_to_frame':
                 if browser_name == 'LeanRequests':
                     raise TypeError('[-] Lean Requests has no execute script')
@@ -185,8 +188,13 @@ class Pythoness:
                     raise TypeError('[-] Frame set_selector is required')
                 field_name=field_name=self._conf['target']['name']
                 action_data={'field_name':field_name, 'xpath':selector}
+
             elif page_action == 'page_source':
                 action_data={'job':self._job}
+
+            elif page_action == 'take_screenshot':
+                action_data={'job':self._job}
+
             print('[+] Start page action [{0}]'.format(page_action))
             getattr(browser, page_action)(page_data=self._data,
                                           action_data=action_data)

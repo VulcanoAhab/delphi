@@ -4,6 +4,7 @@ import os
 import signal
 import json
 import time
+import base64
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
@@ -199,6 +200,13 @@ class BaseSeleniumBrowser:
         except Exception as e:
             print("[-] Fail to grab frame: {}".format(e))
             return
+
+    def take_screenshot(self, action_data, **kwargs):
+        """
+        """
+        #screenshot=self.browser.get_screenshot_as_png()
+        #base64Image=screenshot.encode("base64")
+        #Helpers.save_screen_shot()
 
 class BaseRequests:
     '''

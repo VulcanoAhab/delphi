@@ -56,6 +56,7 @@ class PageAction(models.Model):
         ('wait_3_seconds', 'wait_3_seconds'),
         ('save_headers', 'save_headers'),
         ('switch_to_frame', 'switch_to_frame'),
+        ('take_screenshot', 'take_screenshot'),
         #('scroll_page', 'scroll_page'),
             ]
     type=models.CharField(max_length=50, choices=_pa, default='page_source', unique=True)

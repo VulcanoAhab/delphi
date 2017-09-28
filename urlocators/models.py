@@ -58,6 +58,7 @@ class Page(models.Model):
     created_at=models.DateTimeField(auto_now_add=True)
     modified_at=models.DateTimeField(auto_now=True)
     html=models.TextField()
+    screen_shot=models.TextField(null=True, blank=True)
     addr=models.ForeignKey('urlocators.Locator')
     job=models.ForeignKey('workers.Job')
 

@@ -76,6 +76,28 @@ class Helpers:
         print('[+] Done saving page [{}]'.format(url[:150]))
         if ('return_page' in kwargs):return page
 
+    @staticmethod
+    def save_screenshot(url, screenshot, **kwargs):
+        '''
+        '''
+        #set url id
+        url_id=make_url_id(url)
+        #get job
+        try:
+            job=kwargs['job']
+        except KeyError:
+            raise Exception('[-] Job is required to save page source')
+        #build url relations
+        try:
+            locs=Locator.objects.get(url_id=url_id)
+        except ObjectDoesNotExist:
+            locs=Locator()
+            locs.url=url
+            locs.save()
+        #build and save page
+        page=Page.objects.get_or_create(addr=locs.id, job=job)
+        page.screenshot=screenshot
+
 #===========================================================#
 #==================== Drivers base classes =================#
 class BaseSeleniumBrowser:
@@ -203,9 +225,9 @@ class BaseSeleniumBrowser:
     def take_screenshot(self, action_data, **kwargs):
         """
         """
-        #screenshot=self.browser.get_screenshot_as_base64()
-        #Helpers.save_screen_shot(screenshot)
-        pass
+        url=self.browser.current_url
+        screenshot=self.browser.get_screenshot_as_base64()
+        Helpers.save_screenshot(url, screenshot, job=action_data["job"])
 
     def switch_to_secondWindow(self, action_data, **kwargs):
         """

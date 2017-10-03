@@ -4,7 +4,6 @@ import os
 import signal
 import json
 import time
-import base64
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
@@ -204,9 +203,25 @@ class BaseSeleniumBrowser:
     def take_screenshot(self, action_data, **kwargs):
         """
         """
-        #screenshot=self.browser.get_screenshot_as_png()
-        #base64Image=screenshot.encode("base64")
-        #Helpers.save_screen_shot()
+        #screenshot=self.browser.get_screenshot_as_base64()
+        #Helpers.save_screen_shot(screenshot)
+        pass
+
+    def switch_to_window(self, action_data, **kwargs):
+        """
+        """
+        try:
+            index=action_data["windown_index"]
+            self.window_base=self.browser.window_handles[0]
+            self.browser.switch_to_window(framis)
+        except Exception as e:
+            print("[-] Fail to switch to  window: {}".format(e))
+            return
+    def toMainWindow(self):
+        """
+        """
+        if not self.window_base: raise Exception("[-] No base window found")
+        self.browser.switch_to_window(self.window_base)
 
 class BaseRequests:
     '''

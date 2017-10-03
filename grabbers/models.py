@@ -51,12 +51,15 @@ class PageAction(models.Model):
     _pa=[
         ('back','back'),
         ('toMainPage','toMainPage'),
+        ('toMainWindow', 'toMainWindow')
         ('execute_script', 'execute_script'),
         ('get_header_field', 'get_header_field'),
         ('wait_3_seconds', 'wait_3_seconds'),
         ('save_headers', 'save_headers'),
         ('switch_to_frame', 'switch_to_frame'),
         ('take_screenshot', 'take_screenshot'),
+        ('switch_to_window', 'switch_to_window'),
+
         #('scroll_page', 'scroll_page'),
             ]
     type=models.CharField(max_length=50, choices=_pa, default='page_source', unique=True)

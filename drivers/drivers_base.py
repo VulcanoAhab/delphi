@@ -207,20 +207,24 @@ class BaseSeleniumBrowser:
         #Helpers.save_screen_shot(screenshot)
         pass
 
-    def switch_to_window(self, action_data, **kwargs):
+    def switch_to_secondWindow(self, action_data, **kwargs):
         """
         """
         try:
-            index=action_data["windown_index"]
+            #index=action_data["windown_index"]
+            #for now a dumb switch -- only to the second window
             self.window_base=self.browser.window_handles[0]
-            self.browser.switch_to_window(framis)
+            self.browser.switch_to_window(self.browser.window_handles[1])
         except Exception as e:
             print("[-] Fail to switch to  window: {}".format(e))
             return
+
     def toMainWindow(self):
         """
         """
         if not self.window_base: raise Exception("[-] No base window found")
+        self.browser.close() #close currnent - second-window
+        #move to base window
         self.browser.switch_to_window(self.window_base)
 
 class BaseRequests:

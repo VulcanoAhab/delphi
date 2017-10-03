@@ -58,7 +58,7 @@ class PageAction(models.Model):
         ('save_headers', 'save_headers'),
         ('switch_to_frame', 'switch_to_frame'),
         ('take_screenshot', 'take_screenshot'),
-        ('switch_to_window', 'switch_to_window'),
+        ('switch_to_secondWindow', 'switch_to_secondWindow'),
 
         #('scroll_page', 'scroll_page'),
             ]

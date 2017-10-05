@@ -51,7 +51,7 @@ class PageAction(models.Model):
     _pa=[
         ('back','back'),
         ('toMainPage','toMainPage'),
-        ('toMainWindow', 'toMainWindow')
+        ('toMainWindow', 'toMainWindow'),
         ('execute_script', 'execute_script'),
         ('get_header_field', 'get_header_field'),
         ('wait_3_seconds', 'wait_3_seconds'),

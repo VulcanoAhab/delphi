@@ -112,6 +112,7 @@ class BaseSeleniumBrowser:
         self.pid=None
         self.browser=None
         self.proxy=None
+        self.kwargs=kwargs
 
     def set_host(self, host):
         '''
@@ -129,13 +130,17 @@ class BaseSeleniumBrowser:
         #set browser global waits
         max_implicity=5
         max_timeout=30
-
+        #defaults
+        if "service_args" not in  self.kwargs:
+            self.kwargs["service_args"]=["--ignore-ssl-errors=yes"]
         if proxy_port:
-            proxy_addr='--proxy=127.0.0.1:{}'.format(proxy_port)
-            service_args=[proxy_addr, '--ignore-ssl-errors=yes']
-            self.browser=getattr(self._driver, self._driver_name)(service_args=service_args)
+            proxy_addr="--proxy=127.0.0.1:{}".format(proxy_port)
+            service_args=[proxy_addr,]
+            self.kwargs["service_args"].extend(service_args)
+
+            self.browser=getattr(self._driver, self._driver_name)(**self.kwargs)
         else:
-            self.browser=getattr(self._driver, self._driver_name)()
+            self.browser=getattr(self._driver, self._driver_name)(**self.kwargs)
 
         #load confs :: possible instance level
         self.load_confs(taskConfs)

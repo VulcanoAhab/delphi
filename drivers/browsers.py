@@ -21,7 +21,7 @@ class SeleniumPhantom(BaseSeleniumBrowser):
         script_for_status="""
         this.onResourceReceived = function(request) {
         this.request_response=request
-        }.bind(this);
+        };
         """
         #add phantomjs execute endpoint
         phantom_exc_uri='/session/$sessionId/phantom/execute'
@@ -152,6 +152,75 @@ class LeanRequests(BaseRequests):
         self._headers=kwargs
 
 
+class SeleniumChrome(BaseSeleniumBrowser):
+    '''
+    '''
+    def __init__(self):
+        '''
+        '''
+        options = webdriver.ChromeOptions()
+        options.add_argument("headless")
+        super().__init__('Chrome', chrome_options=options)
+        self._headers={}
+        self._header_name=''
+
+    def chrome_command(self):
+        '''
+        '''
+        script_for_status="""
+        this.onResourceReceived = function(request) {
+        this.request_response=request
+        };
+        """
+        #add phantomjs execute endpoint
+        phantom_exc_uri='/session/$sessionId/phantom/execute'
+        cmds=self.browser.command_executor._commands
+        cmds['executePhantomScript'] = ('POST', phantom_exc_uri)
+        self.browser.execute('executePhantomScript',
+            {'script': script_for_status, 'args': []})
+
+
+    def driver_script(self, script, args=[]):
+        '''
+        run scripts with phantom internal
+        '''
+        return self.chrome_call({'script': script, 'args': args})
+
+
+    def set_header(self, confObject):
+        '''
+        '''
+        headersObj=[h for h in confObject.driver.headers.all()]
+        if not len(headersObj):return
+        self._headers={h.field_name:h.field_value
+            for h in headersObj
+            #Accept-Encoding - avoid phantom bug
+            if h.field_name not in ['Accept-Encoding']}
+        self._header_name=headersObj[0].header_name
+        header_scrit="""
+        this.customHeaders = {headers};
+        """.format(headers=str(self._headers))
+
+        self.driver_script(header_scrit)
+
+    def load_confs(self, confObject):
+        '''
+        '''
+        #prepare phantomjs driver call
+        self.chrome_command()
+        self.chrome_call=partial(self.browser.execute, 'executePhantomScript')
+
+        #load headers
+        self.set_header(confObject)
+        #specific confs
+        self.browser.set_window_size(1124, 850)
+        self.pid=self.browser.service.process.pid
+
+
+    def xpathToaction(self, xpathSelector):
+        """
+        """
+        return self.browser.find_elements_by_xpath(xpathSelector)
 
 DriverChoices.register(SeleniumPhantom)
 DriverChoices.register(LeanRequests)

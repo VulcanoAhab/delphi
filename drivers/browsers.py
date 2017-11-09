@@ -1,5 +1,5 @@
 from functools import partial
-
+from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from drivers.drivers_base import BaseSeleniumBrowser, DriverChoices, BaseRequests
 
@@ -164,28 +164,6 @@ class SeleniumChrome(BaseSeleniumBrowser):
         self._headers={}
         self._header_name=''
 
-    def chrome_command(self):
-        '''
-        '''
-        script_for_status="""
-        this.onResourceReceived = function(request) {
-        this.request_response=request
-        };
-        """
-        #add phantomjs execute endpoint
-        phantom_exc_uri='/session/$sessionId/phantom/execute'
-        cmds=self.browser.command_executor._commands
-        cmds['executePhantomScript'] = ('POST', phantom_exc_uri)
-        self.browser.execute('executePhantomScript',
-            {'script': script_for_status, 'args': []})
-
-
-    def driver_script(self, script, args=[]):
-        '''
-        run scripts with phantom internal
-        '''
-        return self.chrome_call({'script': script, 'args': args})
-
 
     def set_header(self, confObject):
         '''
@@ -206,10 +184,6 @@ class SeleniumChrome(BaseSeleniumBrowser):
     def load_confs(self, confObject):
         '''
         '''
-        #prepare phantomjs driver call
-        self.chrome_command()
-        self.chrome_call=partial(self.browser.execute, 'executePhantomScript')
-
         #load headers
         self.set_header(confObject)
         #specific confs
@@ -225,3 +199,4 @@ class SeleniumChrome(BaseSeleniumBrowser):
 DriverChoices.register(SeleniumPhantom)
 DriverChoices.register(LeanRequests)
 DriverChoices.register(SeleniumRC)
+DriverChoices.register(SeleniumChrome)

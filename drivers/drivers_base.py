@@ -254,10 +254,10 @@ class BaseSeleniumBrowser:
         #move to base window
         self.browser.switch_to_window(self.window_base)
 
-    def execute_script_by_element(self, script, element, **kwargs):
+    def clickByJS(self, element, **kwargs):
         """
         """
-        self.browser.execute_script(script, element)
+        self.browser.execute_script("arguments[0].click()", element)
 
 class BaseRequests:
     '''

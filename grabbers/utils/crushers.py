@@ -152,8 +152,7 @@ class Pythoness:
                 #apply action
                 for targetAction in toAction:
                     if actionType == "jsClick":
-                        browser.execute_script("arguments[0].click()",
-                                                         targetAction)
+                        browser.clickByJS(targetAction)
                     else:
                         getattr(targetAction, actionType)()
                     if not self._conf['post_action']:continue

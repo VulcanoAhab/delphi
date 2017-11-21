@@ -77,7 +77,9 @@ class ElementAction(models.Model):
     '''
     _dos=[
         ('click','click'),
+        ("jsClick", "jsClick"),
     ]
+
     type=models.CharField(max_length=50, choices=_dos, default='click', unique=True)
     index=models.IntegerField(default=0) #legacy
 

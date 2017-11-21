@@ -254,6 +254,11 @@ class BaseSeleniumBrowser:
         #move to base window
         self.browser.switch_to_window(self.window_base)
 
+    def execute_script_by_element(self, script, element, **kwargs):
+        """
+        """
+        self.browser.execute_script(script, element)
+
 class BaseRequests:
     '''
     '''

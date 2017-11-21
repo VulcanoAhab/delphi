@@ -151,7 +151,11 @@ class Pythoness:
                 actionType=self._conf['element_action']
                 #apply action
                 for targetAction in toAction:
-                    getattr(targetAction, actionType)()
+                    if actionType == "jsClick":
+                        browser.execute_script("arguments[0].click()",
+                                                         targetAction)
+                    else:
+                        getattr(targetAction, actionType)()
                     if not self._conf['post_action']:continue
                     postAction=Pythoness()
                     postAction.set_task(self._task)

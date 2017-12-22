@@ -21,7 +21,7 @@ class SeleniumPhantom(BaseSeleniumBrowser):
         script_for_status="""
         this.onResourceReceived = function(request) {
         this.request_response=request
-        };
+        }.bind(this);
         """
         #add phantomjs execute endpoint
         phantom_exc_uri='/session/$sessionId/phantom/execute'
